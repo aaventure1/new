@@ -9,6 +9,8 @@ We are actively looking for contributors and early collaborators.
 - Start here: `CONTRIBUTING.md`
 - Roadmap: `docs/OPEN_SOURCE_ROADMAP.md`
 - Open issues labeled `help wanted` and `good first issue` are ideal entry points.
+- Community expectations: `CODE_OF_CONDUCT.md`
+- Security reporting: `SECURITY.md`
 
 ## 🌟 Features
 
