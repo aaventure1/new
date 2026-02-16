@@ -90,3 +90,7 @@ git push -u origin main
 ## Notes
 - Keep your current repo as private archive/history if needed.
 - Use org-owned secrets and deployment accounts (not personal where possible).
+
+## Related Docs
+- Founder checklist: `docs/FOUNDERS.md`
+- Cofounder access + branch rules: `docs/COFOUNDER_ACCESS_AND_BRANCH_RULES.md`
