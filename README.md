@@ -2,6 +2,14 @@
 
 A comprehensive online platform for AA, NA, and recovery support meetings with court-ordered proof of attendance certificates. Built to replicate and enhance the 12step-online.com business model.
 
+## 🤝 Help Build This
+
+We are actively looking for contributors and early collaborators.
+
+- Start here: `CONTRIBUTING.md`
+- Roadmap: `docs/OPEN_SOURCE_ROADMAP.md`
+- Open issues labeled `help wanted` and `good first issue` are ideal entry points.
+
 ## 🌟 Features
 
 ### Core Features
