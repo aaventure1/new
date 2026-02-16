@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAVenture | Online Recovery Meetings & Verified Proof of Attendance</title>
+    <meta name="description"
+        content="AAVenture offers 24/7 online AA, NA, and other recovery meetings with instant verifiable proof of attendance certificates. Your safe space for recovery, anytime, anywhere.">
+    <meta name="keywords"
+        content="AA meetings online, NA meetings, recovery fellowship, court ordered attendance, recovery certificate, sober community">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aaventure.com/">
+    <meta property="og:title" content="AAVenture | Online Recovery Meetings & Verified Attendance">
+    <meta property="og:description"
+        content="24/7 recovery meetings with instant court-ordered certificates. Join our community today.">
+    <meta property="og:image" content="https://aaventure.com/assets/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://aaventure.com/">
+    <meta property="twitter:title" content="AAVenture | Online Recovery">
+    <meta property="twitter:description"
+        content="Join 24/7 online recovery meetings. Get verified proof of attendance instantly.">
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/premium-enhancements.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="bg-mesh"></div>
+    <div id="serenityVisualizer"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0.4;">
+    </div>
+
+    <!-- Global Announcement Banner -->
+    <div id="announcementBanner" class="announcement-banner hidden">
+        <div class="announcement-content">
+            <span class="announcement-icon">📢</span>
+            <span id="announcementText"></span>
+        </div>
+        <button class="announcement-close"
+            onclick="document.getElementById('announcementBanner').classList.add('hidden')">&times;</button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand" style="cursor: pointer;" onclick="app.navigateTo('home')">
+                <h1>AAVenture</h1>
+                <span class="tagline">Recovery Together</span>
+            </div>
+
+            <button id="themeToggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="nav-menu" id="navMenu">
+                <a href="#" class="nav-link" data-page="home">Home</a>
+                <a href="#" class="nav-link" data-page="calendar">Calendar</a>
+                <a href="#" class="nav-link" data-page="rooms">Rooms</a>
+                <a href="#" class="nav-link" data-page="blog">Blog & JFT</a>
+                <a href="#" class="nav-link" data-page="attendance">Proof of Attendance</a>
+                <a href="#" class="nav-link" data-page="subscription">Subscribe</a>
+                <a href="#" class="nav-link" data-page="resources">Resources</a>
+                <a href="#" class="nav-link" data-page="serenitySupport">AI Serenity Support</a>
+                <a href="#" class="nav-link hidden" id="adminNavLink" data-page="admin">Admin</a>
+            </div>
+            <div class="nav-auth" id="navAuth">
+                <button class="btn btn-secondary" id="loginBtn">Login</button>
+                <button class="btn btn-primary" id="registerBtn">Register</button>
+            </div>
+            <div class="nav-user hidden" id="navUser">
+                <div class="nav-user-actions" style="display: flex; align-items: center; gap: 10px;">
+
+                    <button class="btn btn-outline btn-small" id="privacyToggleBtn" title="Toggle Anonymity Mode">👤
+                        Private: OFF</button>
+                </div>
+                <span class="user-name" id="userName"></span>
+                <button class="btn btn-secondary" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Home Page -->
+        <div class="page active" id="homePage">
+            <div class="hero">
+                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=2000&q=80"
+                    alt="Recovery Community" class="hero-image">
+                <div class="hero-content">
+                    <div class="live-indicator-banner">
+                        <div class="live-wave">
+                            <span></span><span></span><span></span><span></span>
+                        </div>
+                        <span id="liveMeetingsCount">5 Meetings Active Right Now</span>
+                    </div>
+                    <div class="community-pulse-container"
+                        style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #10b981;">COMMUNITY PULSE:</span>
+                        <div class="pulse-bar-bg"
+                            style="width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                            <div id="pulseBarFill"
+                                style="width: 75%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); transition: width 1s ease;">
+                            </div>
+                        </div>
+                        <span id="pulseValue" style="font-size: 0.8rem; font-weight: 700; color: #10b981;">Strong</span>
+                    </div>
+                    <h1 class="hero-title">Recovery Without Boundaries</h1>
+                    <p class="hero-subtitle">The world's most advanced 24/7 online recovery fellowship. AA, NA, and
+                        more. Experience anonymous support that actually works.</p>
+                    <div class="hero-features">
+                        <div class="feature-badge">
+                            <span class="badge-icon">🕐</span>
+                            <span>24/7 Access</span>
+                        </div>
+                        <div class="feature-badge">
+                            <span class="badge-icon">📜</span>
+                            <span>Official Certificates</span>
+                        </div>
+                        <div class="feature-badge">
+                            <span class="badge-icon">🛡️</span>
+                            <span>Privacy First</span>
+                        </div>
+                    </div>
+                    <div class="hero-cta">
+                        <button class="btn btn-large btn-primary" id="heroJoinBtn">Join Free Meeting</button>
+                        <button class="btn btn-large btn-outline" id="heroLearnBtn">Explore Resources</button>
+                    </div>
+                    <div class="social-proof-hero">
+                        <div class="proof-avatars">
+                            <img src="https://i.pravatar.cc/40?u=1" alt="User" loading="lazy">
+                            <img src="https://i.pravatar.cc/40?u=2" alt="User" loading="lazy">
+                            <img src="https://i.pravatar.cc/40?u=3" alt="User" loading="lazy">
+                            <img src="https://i.pravatar.cc/40?u=4" alt="User" loading="lazy">
+                        </div>
+                        <p>Joined by <strong>12,400+</strong> members today</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recovery Dashboard (Visible when logged in) -->
+            <div id="recoveryDashboard" class="page-section hidden reveal" style="padding: 0 2rem;">
+                <div class="glass-card">
+                    <div class="section-header" style="margin-bottom: 2rem;">
+                        <h2>Your Recovery Journey</h2>
+                        <p>Track your progress and celebrate your milestones.</p>
+                    </div>
+                    <div class="level-container mb-2">
+                        <!-- Innovative: Neural Guard Status -->
+                        <div id="neuralGuardBanner" class="glass-card mb-1"
+                            style="padding: 0.8rem; border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span
+                                    style="font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; color: var(--theme-text-light);">NEURAL
+                                    GUARD STATUS</span>
+                                <p id="guardMessage" style="font-size: 0.85rem; margin-top: 2px;">Analyzing patterns...
+                                    System Protected.</p>
+                            </div>
+                            <div id="guardBadge"
+                                style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;">
+                            </div>
+                        </div>
+
+                        <div class="level-info">
+                            <span class="level-label">Level <span id="userLevel">1</span>: <span
+                                    id="userLevelTitle">Novice Recovery</span></span>
+                            <span class="xp-label"><span id="userXP">0</span> / <span id="nextLevelXP">100</span>
+                                XP</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="levelProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-dashboard">
+                        <div class="stat-box">
+                            <span class="stat-icon">🔥</span>
+                            <div class="stat-number" id="currentStreak">0</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon">🙌</span>
+                            <div class="stat-number" id="meetingCount">0</div>
+                            <div class="stat-label">Meetings Attended</div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon">🏆</span>
+                            <div class="badge-grid" id="badgeGrid">
+                                <!-- Badges will be injected here -->
+                            </div>
+                            <div class="stat-label">Badges Earned</div>
+                        </div>
+                    </div>
+
+                    <div class="mood-tracker mt-2"
+                        style="border-top: 1px solid var(--theme-border); padding-top: 2rem;">
+                        <h4 style="text-align: center; margin-bottom: 1.5rem; font-weight: 700;">Daily Mood Check-in
+                        </h4>
+                        <div class="mood-options" style="display: flex; justify-content: center; gap: 1.5rem;">
+                            <button class="mood-btn" data-mood="thriving" title="Thriving"
+                                style="font-size: 2.2rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">🌟</button>
+                            <button class="mood-btn" data-mood="good" title="Good"
+                                style="font-size: 2.2rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">😊</button>
+                            <button class="mood-btn" data-mood="stable" title="Stable"
+                                style="font-size: 2.2rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">⚖️</button>
+                            <button class="mood-btn" data-mood="struggling" title="Struggling"
+                                style="font-size: 2.2rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">🥀</button>
+                            <button class="mood-btn" data-mood="urgent" title="Urgent Help"
+                                style="font-size: 2.2rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">🚨</button>
+                        </div>
+                        <div class="text-center mt-2">
+                            <button class="btn btn-outline btn-small" onclick="window.urgeSurfer.start()">🌊 I'm Having
+                                an Urge (Surfer Mode)</button>
+                        </div>
+                        <p id="moodQuote" class="text-center mt-1"
+                            style="font-style: italic; color: var(--theme-text-light); font-size: 0.9rem; min-height: 1.2rem;">
+                        </p>
+                    </div>
+
+                    <!-- Innovative: Sober-Link Sponsorship -->
+                    <div class="sponsorship-explorer mt-2"
+                        style="border-top: 1px solid var(--theme-border); padding-top: 2rem;">
+                        <div class="flex-row justify-between align-center mb-1">
+                            <h4 style="font-weight: 700;">Neural Sober-Link Matches</h4>
+                            <button class="btn btn-outline btn-small" id="findSponsorBtn">Find Sponsor</button>
+                        </div>
+                        <div id="sponsorMatches" class="matches-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+                            <!-- Matches will be loaded here -->
+                            <p class="text-gray" style="font-size: 0.8rem;">Click 'Find Sponsor' to calculate matches...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Hub (The "Mirror" feature) -->
+            <div id="communityHub" class="page-section reveal" style="padding: 2rem;">
+                <div class="glass-card">
+                    <div class="section-header">
+                        <h2>Community Hub & Meeting Mirror</h2>
+                        <p>Sync with external AA fellowships and Zoom rooms around the world.</p>
+                    </div>
+
+                    <div class="community-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div class="mirror-card">
+                            <h3>🔗 External Room Mirror</h3>
+                            <p>Enter a Zoom or external meeting URL to "mirror" it here while we track your attendance.
+                            </p>
+                            <div class="form-group">
+                                <input type="text" id="externalMirrorUrl" placeholder="https://zoom.us/j/..."
+                                    class="premium-input">
+                                <button class="btn btn-primary mt-1 btn-block"
+                                    onclick="app.mirrorExternalMeeting()">Mirror Meeting</button>
+                            </div>
+                        </div>
+                        <div class="active-mirrors">
+                            <h3>🌐 Featured Online Fellowships</h3>
+                            <div class="fellowship-list">
+                                <div class="fellowship-item glass-card"
+                                    style="padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong>12Step-Online (24/7 Room)</strong>
+                                        <p style="font-size: 0.8rem; opacity: 0.7;">Live Text & Voice Chat</p>
+                                    </div>
+                                    <button class="btn btn-outline btn-small"
+                                        onclick="window.open('https://12step-online.com/meetings/online-aa-meetings/', '_blank')">Visit
+                                        Source</button>
+                                </div>
+                                <div class="fellowship-item glass-card"
+                                    style="padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong>AA Intergroup (Zoom Hub)</strong>
+                                        <p style="font-size: 0.8rem; opacity: 0.7;">1000+ Synchronized Meetings</p>
+                                    </div>
+                                    <button class="btn btn-outline btn-small"
+                                        onclick="window.open('https://aa-intergroup.org/meetings/', '_blank')">Find
+                                        Room</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Just for Today Featured Section -->
+            <div class="jft-featured" id="jftHomeSection">
+                <div class="glass-card">
+                    <div class="jft-badge">JUST FOR TODAY</div>
+                    <h2 id="jftHomeTitle">Daily Reflection</h2>
+                    <p id="jftHomeExcerpt">Loading today's reflection...</p>
+                    <button class="btn btn-secondary" id="readJftBtn">Read Full Reflection</button>
+                </div>
+            </div>
+
+            <div class="quick-access">
+                <div class="section-header">
+                    <h2>Live Support Rooms</h2>
+                    <p>Enter a room to start chatting with the fellowship instantly.</p>
+                </div>
+                <div class="room-grid">
+                    <!-- Existing rooms -->
+                    <div class="room-card" data-room="aa">
+                        <div class="room-icon">🅰️</div>
+                        <h3>AA Room</h3>
+                        <p>Alcoholics Anonymous</p>
+                        <span class="room-status online">● Online Now</span>
+                        <button class="btn btn-primary room-enter-btn" data-room-id="aa">Enter Room</button>
+                    </div>
+                    <div class="room-card" data-room="na">
+                        <div class="room-icon">🆖</div>
+                        <h3>NA Room</h3>
+                        <p>Narcotics Anonymous</p>
+                        <span class="room-status online">● Online Now</span>
+                        <button class="btn btn-primary room-enter-btn" data-room-id="na">Enter Room</button>
+                    </div>
+                    <div class="room-card" data-room="christian">
+                        <div class="room-icon">✝️</div>
+                        <h3>Christian Recovery</h3>
+                        <p>Faith-Based Support</p>
+                        <span class="room-status online">● Online Now</span>
+                        <button class="btn btn-primary room-enter-btn" data-room-id="christian">Enter Room</button>
+                    </div>
+                    <div class="room-card" data-room="open">
+                        <div class="room-icon">🌐</div>
+                        <h3>Open Recovery</h3>
+                        <p>All Welcome</p>
+                        <span class="room-status online">● Online Now</span>
+                        <button class="btn btn-primary room-enter-btn" data-room-id="open">Enter Room</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonials Section -->
+            <div class="testimonials-section reveal">
+                <div class="section-header">
+                    <h2>Community Voices</h2>
+                    <p>Real experiences from our global fellowship.</p>
+                </div>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card glass-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p>"AAVenture changed my life. Being able to join a meeting at 3 AM when I'm struggling is a
+                            miracle."</p>
+                        <div class="testimonial-author">- Sarah M., 2 years sober</div>
+                    </div>
+                    <div class="testimonial-card glass-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p>"The proof of attendance certificates are so easy to manage. My PO was impressed with the
+                            verification system."</p>
+                        <div class="testimonial-author">- Michael R., 6 months sober</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Newsletter Card -->
+            <div class="newsletter-card glass-card reveal">
+                <div class="newsletter-content">
+                    <h3>Stay Connected</h3>
+                    <p>Get daily reflections and community updates in your inbox.</p>
+                </div>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" class="premium-input">
+                    <button class="btn btn-primary">Join Newsletter</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Page -->
+        <div class="page" id="calendarPage">
+            <div class="page-header">
+                <h1>Meeting Calendar</h1>
+                <p>View all scheduled meetings and join live sessions</p>
+            </div>
+            <div class="calendar-container">
+                <div id="meetingsList" class="meetings-list"></div>
+            </div>
+        </div>
+
+        <!-- Rooms Page -->
+        <div class="page" id="roomsPage">
+            <div class="page-header">
+                <h1>Chat Rooms</h1>
+                <p>24/7 text-based recovery support</p>
+            </div>
+            <div class="rooms-container">
+                <div id="roomsList" class="room-grid"></div>
+            </div>
+        </div>
+
+        <!-- Chat Room -->
+        <div class="page" id="chatRoomPage">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <button class="btn btn-secondary" id="backToRoomsBtn">← Back to Rooms</button>
+                    <h2 id="chatRoomTitle">Chat Room</h2>
+                    <div class="chat-actions">
+                        <span id="activeUsersCount" class="active-count">0 online</span>
+                        <div id="handRaisedBadge" class="hand-badge hidden">✋ Hand Raised</div>
+                        <button class="btn btn-secondary btn-small" id="toggleVideoBtn">📹 Start Video</button>
+                        <button class="btn btn-secondary btn-small" id="toggleAudioBtn">🎤 Mute</button>
+                        <button class="btn btn-secondary btn-small" id="raiseHandBtn">Raise Hand</button>
+                        <button class="btn btn-primary" id="generateCertBtn">Get Certificate</button>
+                    </div>
+                </div>
+                <!-- Video Grid -->
+                <div id="videoGrid" class="video-grid hidden">
+                    <div class="local-video-container">
+                        <video id="localVideo" autoplay muted playsinline></video>
+                        <div class="video-label">You</div>
+                    </div>
+                    <!-- Remote videos will be added here -->
+                </div>
+                <div class="chat-main">
+                    <div class="chat-sidebar">
+                        <div class="sidebar-section">
+                            <h3>Active Users</h3>
+                            <div id="activeUsersList" class="users-list"></div>
+                        </div>
+                        <div class="sidebar-section mt-2">
+                            <h3>Share Reading</h3>
+                            <p class="sidebar-hint">Sends text to everyone in the room</p>
+                            <div class="readings-btns">
+                                <button class="btn btn-secondary btn-block btn-small" data-share="serenity">Serenity
+                                    Prayer</button>
+                                <button class="btn btn-secondary btn-block btn-small" data-share="preamble">AA
+                                    Preamble</button>
+                                <button class="btn btn-secondary btn-block btn-small" data-share="reflection">Daily
+                                    Reflection</button>
+                                <button class="btn btn-secondary btn-block btn-small" data-share="how-it-works">How It
+                                    Works</button>
+                            </div>
+                        </div>
+                        <div class="sidebar-section mt-2">
+                            <h3>Room Rules</h3>
+                            <ul class="sidebar-list">
+                                <li>Be respectful and kind</li>
+                                <li>Share experience, strength, hope</li>
+                                <li>Protect member anonymity</li>
+                                <li>No cross-talk or advice</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="chat-messages-container">
+                        <div id="chatMessages" class="chat-messages"></div>
+                        <div id="typingIndicator" class="typing-indicator hidden"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" placeholder="Type your message..." maxlength="1000">
+                            <button class="btn btn-primary" id="sendMessageBtn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Page -->
+        <div class="page" id="blogPage">
+            <div class="page-header">
+                <h1>Community Blog</h1>
+                <p>Latest stories, news, and "Just for Today" reflections</p>
+            </div>
+            <div class="blog-grid" id="blogPostsList">
+                <!-- Posts will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Attendance Page -->
+        <div class="page" id="attendancePage">
+            <div class="page-header">
+                <h1>Proof of Attendance</h1>
+                <p>View your attendance records and download certificates</p>
+            </div>
+            <div class="attendance-container">
+
+                <div class="subscription-notice" id="subscriptionNotice">
+                    <h3>⚠️ Subscription Required</h3>
+                    <p>To generate court-ordered proof of attendance certificates, you need an active subscription.</p>
+                    <button class="btn btn-primary" id="subscribeNowBtn">Subscribe Now</button>
+                </div>
+                <div id="attendanceRecords" class="attendance-records"></div>
+            </div>
+        </div>
+
+        <!-- Subscription Page -->
+        <div class="page" id="subscriptionPage">
+            <div class="page-header">
+                <h1>Subscription Plans</h1>
+                <p>Get court-ordered proof of attendance certificates</p>
+            </div>
+            <div class="subscription-container">
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h3>1 Month</h3>
+                        <div class="price">$20.00</div>
+                        <ul class="features-list">
+                            <li>✓ Court-Ordered Certificates</li>
+                            <li>✓ Premium 24/7 Live Video Streams</li>
+                            <li>✓ Immediate PDF Download</li>
+                            <li>✓ Attendance Tracking</li>
+                            <li>✓ Verification Support</li>
+                            <li>✓ Access All Meetings</li>
+                        </ul>
+                        <button class="btn btn-primary subscribe-btn" data-plan="1month">Subscribe</button>
+                    </div>
+                    <div class="pricing-card featured">
+                        <div class="popular-badge">Most Popular</div>
+                        <h3>2 Months</h3>
+                        <div class="price">$35.00</div>
+                        <div class="savings">Save $5</div>
+                        <ul class="features-list">
+                            <li>✓ Court-Ordered Certificates</li>
+                            <li>✓ Premium 24/7 Live Video Streams</li>
+                            <li>✓ Immediate PDF Download</li>
+                            <li>✓ Attendance Tracking</li>
+                            <li>✓ Verification Support</li>
+                            <li>✓ Access All Meetings</li>
+                        </ul>
+                        <button class="btn btn-primary subscribe-btn" data-plan="2months">Subscribe</button>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>3 Months</h3>
+                        <div class="price">$45.00</div>
+                        <div class="savings">Save $15</div>
+                        <ul class="features-list">
+                            <li>✓ Court-Ordered Certificates</li>
+                            <li>✓ Premium 24/7 Live Video Streams</li>
+                            <li>✓ Immediate PDF Download</li>
+                            <li>✓ Attendance Tracking</li>
+                            <li>✓ Verification Support</li>
+                            <li>✓ Access All Meetings</li>
+                        </ul>
+                        <button class="btn btn-primary subscribe-btn" data-plan="3months">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription Success Page -->
+        <div class="page" id="successPage">
+            <div class="page-header text-center">
+                <div class="success-icon" style="font-size: 4rem; margin-bottom: 1rem;">✨</div>
+                <h1>Subscription Activated!</h1>
+                <p>Thank you for supporting our community. Your premium features are now active.</p>
+                <div class="mt-3">
+                    <button class="btn btn-primary" id="successHomeBtn">Go to Homepage</button>
+                    <button class="btn btn-secondary" id="successMeetingsBtn">View Meetings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Page -->
+        <div class="page" id="resourcesPage">
+            <div class="page-header">
+                <h1>Resources</h1>
+                <p>Helpful information and support materials</p>
+            </div>
+            <div class="resources-container">
+                <div class="resource-section">
+                    <h2>About Our Meetings</h2>
+                    <p>AAVenture provides 24/7 online recovery meetings for individuals seeking support in their journey
+                        to recovery. Our platform offers both text-based chat rooms and scheduled video meetings.</p>
+                </div>
+                <!-- Resources Detail View -->
+                <div id="resourceDetailView" class="resource-detail hidden">
+                    <button class="btn btn-secondary mb-2" id="backToResourcesBtn">← Back to Resources</button>
+                    <div class="glass-card" id="resourceContent">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+
+                <div class="resource-section" id="resourceMainSection">
+                    <h2>Recovery Literature & Audio</h2>
+                    <div class="resource-grid">
+                        <div class="resource-item">
+                            <h3>The 12 Steps</h3>
+                            <p>The foundation of the recovery program.</p>
+                            <a href="#" class="resource-link" data-resource="steps">View Steps</a>
+                        </div>
+                        <div class="resource-item">
+                            <h3>The 12 Traditions</h3>
+                            <p>The principles that keep our community healthy.</p>
+                            <a href="#" class="resource-link" data-resource="traditions">View Traditions</a>
+                        </div>
+                        <div class="resource-item">
+                            <h3>Audio Reflections</h3>
+                            <p>Listen to relaxing meditations and speaker tapes.</p>
+                            <button class="btn btn-outline btn-block"
+                                onclick="window.notificationManager.show('Audio library loading... Coming Soon!', 'info')">🎧
+                                Open Library</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="resource-section">
+                    <h2>How It Works</h2>
+                    <ol>
+                        <li>Register for a free account</li>
+                        <li>Join any of our 24/7 chat rooms or scheduled meetings</li>
+                        <li>Subscribe to get court-ordered proof of attendance</li>
+                        <li>Download your certificates instantly after meetings</li>
+                    </ol>
+                </div>
+                <div class="resource-section">
+                    <h2>Meeting Guidelines</h2>
+                    <ul>
+                        <li>Respect anonymity and confidentiality</li>
+                        <li>Be supportive and non-judgmental</li>
+                        <li>Stay on topic and focused on recovery</li>
+                        <li>No solicitation or promotion</li>
+                        <li>Minimum 30 minutes attendance for certificates</li>
+                    </ul>
+                </div>
+                <div class="resource-section">
+                    <h2>External Resources</h2>
+                    <div class="external-links">
+                        <a href="https://www.aa.org" target="_blank" class="resource-link">AA.org - Alcoholics
+                            Anonymous</a>
+                        <a href="https://www.na.org" target="_blank" class="resource-link">NA.org - Narcotics
+                            Anonymous</a>
+                        <a href="https://www.samhsa.gov" target="_blank" class="resource-link">SAMHSA - Substance Abuse
+                            Resources</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Serenity Support Page (AI) -->
+        <div class="page" id="serenitySupportPage">
+            <div class="page-header">
+                <h1>Serenity Support AI</h1>
+                <p>Intelligent, anonymous recovery aid and 24/7 support powered by web-search active intelligence.</p>
+            </div>
+            <div class="serenity-chat-container glass-card">
+                <div id="serenityMessages" class="chat-messages serenity-messages"
+                    style="height: 400px; overflow-y: auto;">
+                    <div class="message system">
+                        <div class="message-content">Hello, I am Serenity. I'm here to help you find resources, explain
+                            steps, or just listen. How can I support your recovery today?</div>
+                    </div>
+                </div>
+                <div id="serenityTyping" class="typing-indicator hidden">Serenity is searching and thinking...</div>
+                <div class="chat-input-container">
+                    <input type="text" id="serenityInput"
+                        placeholder="Ask anything (e.g. 'local meetings', 'how to handle cravings', 'Step 4 guide')..."
+                        maxlength="1000">
+                    <button class="btn btn-primary" id="sendSerenityBtn">Ask Serenity</button>
+                </div>
+            </div>
+            <div class="mt-2 text-center">
+                <p class="text-gray" style="font-size: 0.8rem;">Serenity uses AI and live web search to provide
+                    up-to-date recovery information. For emergencies, please call a crisis hotline.</p>
+            </div>
+        </div>
+
+
+        <!-- Verification Page (Public) -->
+        <div class="page" id="verifyPage">
+            <div class="page-header">
+                <h1>Verify a Certificate</h1>
+                <p>Verify the authenticity of a court-ordered proof of attendance</p>
+            </div>
+            <div class="verify-container">
+                <div class="glass-card compact">
+                    <h3>Certificate Verification</h3>
+                    <p>Enter the Certificate ID to verify its details.</p>
+                    <div class="form-group">
+                        <input type="text" id="verifyInput" placeholder="Enter Certificate ID (e.g. uuid-...)">
+                    </div>
+                    <button class="btn btn-primary btn-block" id="checkVerifyBtn">Verify Certificate</button>
+
+                    <div id="verifyResult" class="verify-result hidden">
+                        <!-- Result details will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div class="page" id="adminPage">
+            <div class="page-header">
+                <h1>Admin Dashboard</h1>
+                <p>Manage users, meetings, and platform settings</p>
+            </div>
+            <div class="admin-container">
+                <div class="admin-tabs">
+                    <button class="btn btn-secondary active" data-admin-tab="overview">Overview</button>
+                    <button class="btn btn-secondary" data-admin-tab="users">Users</button>
+                    <button class="btn btn-secondary" data-admin-tab="meetings">Meetings</button>
+                    <button class="btn btn-secondary" data-admin-tab="attendance">Attendance Review</button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div class="admin-tab-content active" id="adminOverviewTab">
+                    <div class="stats-grid">
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Total Users</span>
+                            <span class="stat-value" id="adminStatUsers">...</span>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Total Meetings</span>
+                            <span class="stat-value" id="adminStatMeetings">...</span>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Active Subscriptions</span>
+                            <span class="stat-value" id="adminStatSubs">...</span>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Certificates Issued</span>
+                            <span class="stat-value" id="adminStatAttendance">...</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card mt-2">
+                        <h3>Admin Actions</h3>
+                        <div class="admin-form-group">
+                            <label>Send Global Announcement</label>
+                            <textarea id="globalAnnouncementInput" placeholder="Enter announcement text..."></textarea>
+                            <button class="btn btn-primary mt-1" id="sendAnnouncementBtn">Broadcast to All
+                                Users</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card mt-2">
+                        <h3>Recent Activity</h3>
+                        <div id="adminActivityFeed" class="activity-feed">
+                            <p class="text-gray">No recent activity found.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div class="admin-tab-content" id="adminUsersTab">
+                    <div class="glass-card">
+                        <h3>User Management</h3>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Chat Name</th>
+                                        <th>Admin</th>
+                                        <th>Subscription</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUsersList">
+                                    <!-- Users will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meetings Tab -->
+                <div class="admin-tab-content" id="adminMeetingsTab">
+                    <div class="glass-card mb-2">
+                        <h3>Create New Meeting</h3>
+                        <form id="createMeetingForm" class="admin-form">
+                            <!-- ... form content ... -->
+                        </form>
+                    </div>
+                    <div class="glass-card">
+                        <h3>Existing Meetings</h3>
+                        <div id="adminMeetingsList" class="admin-meetings-grid">
+                            <!-- Meetings list -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Review Tab -->
+                <div class="admin-tab-content" id="adminAttendanceTab">
+                    <div class="glass-card">
+                        <h3>Recent Attendance Records</h3>
+                        <p class="text-gray mb-2">Review automatically generated certificates and flagged sessions.</p>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Certificate ID</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminAttendanceList">
+                                    <!-- Records will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand" onclick="app.navigateTo('home')" style="cursor: pointer;">
+                <h3>AAVenture</h3>
+                <p>Anonymity & Recovery Without Borders</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-section">
+                    <h4>Program</h4>
+                    <a href="#" onclick="app.navigateTo('home')">Home</a>
+                    <a href="#" onclick="app.navigateTo('calendar')">Calendar</a>
+                    <a href="#" onclick="app.navigateTo('rooms')">Chat Rooms</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <a href="https://github.com/skontny/aaventure" target="_blank">Source Code</a>
+                    <a href="#" onclick="app.navigateTo('blog')">Recovery Blog</a>
+                    <a href="#" onclick="app.navigateTo('resources')">Resources</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <a href="#" onclick="app.navigateTo('subscription')">Premium Support</a>
+                    <a href="#" onclick="app.navigateTo('verify')">Verify Certificate</a>
+                    <a href="mailto:support@aaventure.com">Contact Us</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 AAVenture Recovery Fellowship. All links operate to source. Protected by Anonymity.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="modal-close" id="loginModalClose">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </form>
+            <p class="modal-footer">Don't have an account? <a href="#" id="switchToRegister">Register</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="modal-close" id="registerModalClose">&times;</span>
+            <h2>Register</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerChatName">Name for Chat (can be anonymous)</label>
+                    <input type="text" id="registerChatName" required>
+                    <small>This is the name others will see in chat rooms</small>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Register</button>
+            </form>
+            <p class="modal-footer">Already have an account? <a href="#" id="switchToLogin">Login</a></p>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab" id="fabSerenity" title="Speak with Serenity AI">✨</button>
+        <button class="fab" id="fabSupport" title="Get Help Now">🆘</button>
+    </div>
+
+    <!-- Floating "Pass the Can" Button (Hidden on mobile if needed) -->
+    <div class="floating-cta">
+        <button class="btn btn-primary btn-round" id="passTheCanBtn" title="Pass the Can (Donate)">
+            <span class="icon">🪙</span>
+            <span class="text">Pass the Can</span>
+        </button>
+    </div>
+
+    <!-- Pass The Can (Donation) Modal -->
+    <div class="modal" id="donationModal">
+        <div class="modal-content glass-card">
+            <span class="modal-close" id="donationModalClose">&times;</span>
+            <div class="text-center">
+                <span style="font-size: 3rem;">🪙</span>
+                <h2>Pass the Can</h2>
+                <p>Support the AAVenture fellowship. Your donations help keep the rooms open and free for everyone.</p>
+                <div class="donation-options mt-2">
+                    <button class="btn btn-outline btn-small">$2</button>
+                    <button class="btn btn-outline btn-small">$5</button>
+                    <button class="btn btn-outline btn-small">$10</button>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-block" id="donateRealBtn">Donate via Stripe</button>
+                </div>
+                <p class="mt-1" style="font-size: 0.8rem; color: var(--gray);">7th Tradition: "Every group ought to be
+                    fully self-supporting, declining outside contributions."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Welcome Modal -->
+    <div class="modal" id="welcomeOnboardingModal">
+        <div class="modal-content glass-card premium-modal" style="text-align: center;">
+            <div class="onboarding-steps">
+                <div class="step active" data-step="1">
+                    <span style="font-size: 4rem;">👋</span>
+                    <h2>Welcome to AAVenture</h2>
+                    <p>The next generation of recovery. You're not alone anymore. Let's get you started in 3 simple
+                        steps.</p>
+                </div>
+                <div class="step hidden" data-step="2">
+                    <span style="font-size: 4rem;">🎥</span>
+                    <h2>24/7 Live Streams</h2>
+                    <p>Access global AA and NA marathons anytime. Premium members can track attendance and get verified
+                        certificates for these live sessions.</p>
+                </div>
+                <div class="step hidden" data-step="3">
+                    <span style="font-size: 4rem;">🛡️</span>
+                    <h2>Verified Progress</h2>
+                    <p>Build your recovery streak, earn achievement badges, and level up your recovery journey with
+                        every meeting you attend.</p>
+                </div>
+
+            </div>
+            <div class="modal-footer mt-2">
+                <button class="btn btn-primary btn-block" id="nextOnboardingBtn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Urge Surfer Modal -->
+    <div class="modal" id="urgeSurferModal">
+        <div class="modal-content glass-card" style="max-width: 500px;">
+            <div class="text-center">
+                <span id="urgeTimer" style="font-size: 3rem; font-weight: 800; color: #6366f1;">10:00</span>
+                <h2 id="urgeStepTitle" style="margin-top: 1rem;">Surfing the Urge</h2>
+                <div class="progress-bar-bg mt-1 mb-2">
+                    <div id="urgeProgress" class="progress-bar-fill" style="width: 20%;"></div>
+                </div>
+                <p id="urgeStepText" style="min-height: 80px; font-size: 1.1rem; line-height: 1.6;">Stay with the
+                    feeling. It is temporary. Breathe deeply.</p>
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-block" onclick="window.urgeSurfer.nextStep()">Next Step</button>
+                    <button class="btn btn-outline btn-block mt-1"
+                        onclick="document.getElementById('urgeSurferModal').classList.remove('active')">Exit (I am
+                        safe)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-nav" id="mobileNav">
+        <a href="#" class="mobile-nav-item" data-page="home">
+            <span class="icon">🏠</span>
+            <span class="label">Home</span>
+        </a>
+        <a href="#" class="mobile-nav-item" data-page="rooms">
+            <span class="icon">💬</span>
+            <span class="label">Chat</span>
+        </a>
+        <a href="#" class="mobile-nav-item" data-page="attendance">
+            <span class="icon">📜</span>
+            <span class="label">Proof</span>
+        </a>
+        <a href="#" class="mobile-nav-item" data-page="subscription">
+            <span class="icon">💎</span>
+            <span class="label">Plans</span>
+        </a>
+    </div>
+
+    <!-- Serenity AI Floating Companion -->
+    <div id="serenityAI" class="serenity-chat hidden">
+        <div class="serenity-header">
+            <div class="serenity-status">●</div>
+            <span>Serenity Support</span>
+            <button class="serenity-close"
+                onclick="document.getElementById('serenityAI').classList.add('hidden')">&times;</button>
+        </div>
+        <div id="serenityMessages" class="serenity-body">
+            <div class="serenity-msg ai">Hello! I'm Serenity, your AI recovery companion. What can I help you with
+                today? I'm here 24/7 to listen.</div>
+        </div>
+        <div class="serenity-footer">
+            <input type="text" id="serenityInput" placeholder="How are you doing?">
+            <button id="sendSerenityBtn">➤</button>
+        </div>
+    </div>
+
+    <button id="toggleSerenityBtn" class="serenity-trigger">
+        <span>⭐ Serenity AI</span>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/js/urge-surfer.js"></script>
+    <script src="/js/serenity-engine.js"></script>
+    <script src="/js/premium-features.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+
+</html>

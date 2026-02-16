@@ -1,0 +1,46 @@
+{
+  "name": "aaventure",
+  "version": "1.0.0",
+  "description": "Online AA/NA Recovery Meetings Platform with Proof of Attendance",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "seed": "node server/seed.js",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "quick-start": "./start.sh"
+  },
+  "keywords": [
+    "aa",
+    "na",
+    "recovery",
+    "meetings",
+    "attendance"
+  ],
+  "author": "Seth Kontny",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.5",
+    "nodemailer": "^7.0.12",
+    "pdfkit": "^0.17.2",
+    "socket.io": "^4.8.3",
+    "stripe": "^20.2.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "socket.io-client": "^4.8.3"
+  }
+}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aaventure.com/sitemap.xml

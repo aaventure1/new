@@ -1,0 +1,14 @@
+node_modules/
+.env
+*.log
+.DS_Store
+public/certificates/*.pdf
+*.pem
+*.key
+.vscode/
+.idea/
+
+# Blockchain / Hardhat
+cache/
+artifacts/
+typechain-types/
