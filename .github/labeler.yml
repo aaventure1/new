@@ -1,0 +1,33 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "public/**"
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "server/**"
+          - "api/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "**/*.md"
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "test/**"
+          - "tests/**"
+          - "**/*.spec.js"
+          - "**/*.test.js"
+
+devops:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "Dockerfile"
+          - "docker-compose.yml"
+          - "render.yaml"
+          - "vercel.json"
