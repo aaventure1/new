@@ -892,7 +892,6 @@ button,
 }
 
 /* Better mobile responsiveness */
-/*TODO: here*/
 @media (max-width: 768px) {
   .fab-container {
     bottom: 200px;
@@ -919,5 +918,24 @@ button,
   }
   .page {
     padding: 1rem;
+  }
+}
+@media (max-width: 320px) {
+  .fab-container {
+    bottom: 200px;
+  }
+  #fabSerenity {
+    width: 45px;
+    height: 45px;
+  }
+  #fabSupport {
+    width: 45px;
+    height: 45px;
+  }
+  .serenity-trigger {
+    width: 140px;
+    height: 35px;
+    right: 12px;
+    bottom: 150px;
   }
 }

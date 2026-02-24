@@ -1839,3 +1839,11 @@ video {
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (max-width: 320px) {
+  .floating-cta button {
+    width: 150px;
+    height: 40px;
+    bottom: 5px;
+  }
+}
