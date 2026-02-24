@@ -349,22 +349,6 @@ button,
   transition: var(--transition);
 }
 
-/* Better mobile responsiveness */
-@media (max-width: 768px) {
-  .glass-card {
-    padding: 1.5rem;
-  }
-
-  .btn {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.9375rem;
-  }
-
-  .page {
-    padding: 1rem;
-  }
-}
-
 /* Add a subtle pulse to the online indicator */
 .online-indicator {
   position: relative;
@@ -904,5 +888,36 @@ button,
 
   .timer-display {
     font-size: 2.5rem;
+  }
+}
+
+/* Better mobile responsiveness */
+/*TODO: here*/
+@media (max-width: 768px) {
+  .fab-container {
+    bottom: 200px;
+  }
+  #fabSerenity {
+    width: 50px;
+    height: 50px;
+  }
+  #fabSupport {
+    width: 50px;
+    height: 50px;
+  }
+  .serenity-trigger {
+    right: 12px;
+    bottom: 150px;
+  }
+  .glass-card {
+    padding: 1.5rem;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+  .page {
+    padding: 1rem;
   }
 }
