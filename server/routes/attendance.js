@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const Attendance = require('../models/Attendance');
 const AttendanceSubmission = require('../models/AttendanceSubmission');
 const Meeting = require('../models/Meeting');
@@ -87,7 +87,7 @@ async function ensureBridgeUser({ fullName, email }) {
     user = await User.create({
         username,
         email: normalizedEmail,
-        password: `bridge-${uuidv4()}`,
+        password: `bridge-${crypto.randomUUID()}`,
         chatName,
         subscription: 'basic',
         subscriptionExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
@@ -513,7 +513,7 @@ router.post('/generate-certificate', auth, requireSubscription, async (req, res)
         }
 
         // Generate unique certificate ID and verification code
-        const certificateId = uuidv4();
+        const certificateId = crypto.randomUUID();
         const verificationCode = CertificateGenerator.generateVerificationCode();
 
         // Create attendance record
