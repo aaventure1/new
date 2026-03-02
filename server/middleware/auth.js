@@ -1,6 +1,16 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const getJwtSecret = () => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret.includes('change-in-production')) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('JWT_SECRET is not configured safely for production');
+        }
+    }
+    return secret || 'dev-insecure-secret';
+};
+
 const auth = async (req, res, next) => {
     try {
         // Check for token in header or session
@@ -14,7 +24,7 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
+        const decoded = jwt.verify(token, getJwtSecret());
         const user = await User.findById(decoded.userId);
 
         if (!user) {

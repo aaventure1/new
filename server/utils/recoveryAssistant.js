@@ -22,7 +22,7 @@ class RecoveryAssistant {
             "Have you reached out to a recovery friend today?",
             "Remember to breathe deeply when things get stressful.",
             "Your level represents your commitment. Keep growing!",
-            "Earning REC tokens shows your dedication to the community."
+            "Showing up consistently is a strong sign of progress."
         ];
     }
 

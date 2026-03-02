@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Meeting = require('../models/Meeting');
+const AttendanceSubmission = require('../models/AttendanceSubmission');
+const Attendance = require('../models/Attendance');
 const { auth, adminAuth } = require('../middleware/auth');
+const { enqueueAttendanceSubmissionEmails } = require('../utils/attendanceEmailQueue');
+const { snapshot: attendanceMetricsSnapshot } = require('../utils/attendanceMetrics');
 
 // All routes here require admin privileges
 router.use(auth, adminAuth);
@@ -202,6 +206,113 @@ router.get('/attendance-review', async (req, res) => {
 
     }
 
+});
+
+router.get('/attendance-submissions', async (req, res) => {
+    try {
+        const limit = Math.min(100, Math.max(1, Number(req.query.limit || 25)));
+        const page = Math.max(1, Number(req.query.page || 1));
+        const skip = (page - 1) * limit;
+        const filter = {};
+
+        if (req.query.status) {
+            filter.status = req.query.status;
+        }
+        if (req.query.from || req.query.to) {
+            filter.submittedAt = {};
+            if (req.query.from) filter.submittedAt.$gte = new Date(req.query.from);
+            if (req.query.to) filter.submittedAt.$lte = new Date(req.query.to);
+        }
+        if (req.query.search) {
+            const re = new RegExp(String(req.query.search).trim(), 'i');
+            filter.$or = [
+                { attendeeFullName: re },
+                { attendeeEmail: re },
+                { meetingTopic: re },
+                { meetingChairperson: re },
+                { certificateId: re }
+            ];
+        }
+
+        const [records, total] = await Promise.all([
+            AttendanceSubmission.find(filter)
+                .sort({ submittedAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('userId', 'chatName email')
+                .lean(),
+            AttendanceSubmission.countDocuments(filter)
+        ]);
+
+        res.json({
+            success: true,
+            page,
+            limit,
+            total,
+            records
+        });
+    } catch (error) {
+        console.error('Attendance submissions list error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.get('/attendance-submissions/:id', async (req, res) => {
+    try {
+        const record = await AttendanceSubmission.findById(req.params.id)
+            .populate('userId', 'chatName email')
+            .lean();
+        if (!record) {
+            return res.status(404).json({ error: 'Submission not found' });
+        }
+
+        let linkedAttendance = null;
+        if (record.certificateId) {
+            linkedAttendance = await Attendance.findOne({ certificateId: record.certificateId }).lean();
+        }
+
+        res.json({
+            success: true,
+            record,
+            linkedAttendance
+        });
+    } catch (error) {
+        console.error('Attendance submission detail error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.post('/attendance-submissions/:id/retry-email', async (req, res) => {
+    try {
+        const record = await AttendanceSubmission.findById(req.params.id);
+        if (!record) {
+            return res.status(404).json({ error: 'Submission not found' });
+        }
+
+        record.status = record.certificateId ? 'linked' : 'submitted';
+        await record.save();
+        enqueueAttendanceSubmissionEmails({ submissionId: record._id.toString(), retries: 2 });
+
+        res.json({
+            success: true,
+            message: 'Email retry queued'
+        });
+    } catch (error) {
+        console.error('Attendance submission retry email error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.get('/attendance-metrics', async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            metrics: attendanceMetricsSnapshot()
+        });
+    } catch (error) {
+        console.error('Attendance metrics error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 

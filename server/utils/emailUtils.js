@@ -1,15 +1,43 @@
 const nodemailer = require('nodemailer');
 
-// Configure email transporter
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
-    port: process.env.EMAIL_PORT || 587,
-    secure: process.env.EMAIL_PORT == 465,
-    auth: {
-        user: process.env.EMAIL_USER || 'placeholder',
-        pass: process.env.EMAIL_PASS || 'placeholder'
+const isPlaceholderValue = (value = '') => {
+    const lower = String(value).toLowerCase();
+    return !lower
+        || lower.includes('placeholder')
+        || lower.includes('your-email')
+        || lower.includes('your_email');
+};
+
+const emailEnabled = process.env.EMAIL_ENABLED !== 'false'
+    && !isPlaceholderValue(process.env.EMAIL_USER)
+    && !isPlaceholderValue(process.env.EMAIL_PASS);
+
+const transporter = emailEnabled
+    ? nodemailer.createTransport({
+        host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
+        port: Number(process.env.EMAIL_PORT || 587),
+        secure: String(process.env.EMAIL_PORT || '587') === '465',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    })
+    : null;
+
+if (!emailEnabled) {
+    console.log('ℹ️ Email delivery disabled (EMAIL_USER/EMAIL_PASS not configured).');
+}
+
+const sendMailIfConfigured = async (mailOptions, label) => {
+    if (!transporter) return { sent: false, skipped: true };
+    try {
+        await transporter.sendMail(mailOptions);
+        return { sent: true, skipped: false };
+    } catch (error) {
+        console.error(`Email send failed (${label}):`, error.code || error.message);
+        return { sent: false, skipped: false };
     }
-});
+};
 
 /**
  * Send a welcome email to a new user
@@ -40,11 +68,9 @@ const sendWelcomeEmail = async (email, username) => {
         `
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
+    const result = await sendMailIfConfigured(mailOptions, 'welcome');
+    if (result.sent) {
         console.log(`✅ Welcome email sent to ${email}`);
-    } catch (error) {
-        console.error('❌ Error sending welcome email:', error);
     }
 };
 
@@ -66,7 +92,7 @@ const sendCertificateEmail = async (email, details) => {
                 <div style="background: #f0fdfa; padding: 20px; border-radius: 12px; border: 1px solid #10b981; margin: 20px 0; text-align: center;">
                     <p style="font-size: 0.9rem; color: #065f46; margin-bottom: 5px;">Certificate ID</p>
                     <p style="font-size: 1.2rem; font-weight: bold; margin: 0;">${details.certificateId}</p>
-                    <a href="${process.env.BASE_URL}/api/attendance/download/${details.certificateId}" 
+                    <a href="${process.env.BASE_URL || 'http://localhost:3000'}/api/attendance/download/${details.certificateId}" 
                        style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
                         Download Certificate (PDF)
                     </a>
@@ -77,15 +103,43 @@ const sendCertificateEmail = async (email, details) => {
         `
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
+    const result = await sendMailIfConfigured(mailOptions, 'certificate');
+    if (result.sent) {
         console.log(`✅ Certificate email sent to ${email}`);
-    } catch (error) {
-        console.error('❌ Error sending certificate email:', error);
     }
+};
+
+const sendAttendanceSubmissionEmail = async (email, details = {}) => {
+    const safeMeetingTopic = String(details.meetingTopic || 'Recovery Meeting');
+    const safeMeetingDate = details.meetingDate ? new Date(details.meetingDate).toLocaleDateString() : 'N/A';
+    const safeMeetingTime = String(details.meetingTimeLabel || 'N/A');
+    const safeMeetingId = String(details.meetingIdDisplay || 'N/A');
+
+    const mailOptions = {
+        from: `"AAVenture Attendance" <${process.env.EMAIL_FROM || 'noreply@aaventure.com'}>`,
+        to: email,
+        subject: `Attendance Form Received: ${safeMeetingTopic}`,
+        html: `
+            <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
+                <h1 style="color: #6366f1;">Attendance Form Submitted</h1>
+                <p>Your online meeting attendance form has been received.</p>
+                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <p><strong>Meeting Topic:</strong> ${safeMeetingTopic}</p>
+                    <p><strong>Meeting Date:</strong> ${safeMeetingDate}</p>
+                    <p><strong>Meeting Time:</strong> ${safeMeetingTime}</p>
+                    <p><strong>Meeting ID:</strong> ${safeMeetingId}</p>
+                </div>
+                <p style="margin-top: 16px;">This message confirms submission only. Please review your dashboard for certificate updates.</p>
+            </div>
+        `
+    };
+
+    return sendMailIfConfigured(mailOptions, 'attendance-submission');
 };
 
 module.exports = {
     sendWelcomeEmail,
-    sendCertificateEmail
+    sendCertificateEmail,
+    sendAttendanceSubmissionEmail,
+    sendMailIfConfigured
 };

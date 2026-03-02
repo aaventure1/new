@@ -7,10 +7,12 @@
     "start": "node server/index.js",
     "dev": "node server/index.js",
     "seed": "node server/seed.js",
+    "test": "mocha \"tests/**/*.test.js\" --timeout 15000 --exit",
+    "test:smoke": "mocha \"tests/smoke/**/*.test.js\" --timeout 15000 --exit",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "quick-start": "./start.sh",
-    "deploy:contracts": "cd smart-contracts && npx hardhat run scripts/deploy.js --network baseSepolia"
+    "quick-start": "./start.sh"
   },
   "keywords": [
     "aa",
@@ -21,36 +23,29 @@
   ],
   "author": "Seth Kontny",
   "license": "ISC",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.4.0",
     "bcryptjs": "^3.0.3",
     "connect-mongo": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
     "nodemailer": "^7.0.12",
     "pdfkit": "^0.17.2",
     "socket.io": "^4.8.3",
     "stripe": "^20.2.0",
-    "uuid": "^13.0.0",
-    "ethers": "^6.16.0"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
-    "@nomicfoundation/hardhat-ethers": "^4.0.4",
-    "@nomicfoundation/hardhat-network-helpers": "^3.0.3",
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@nomicfoundation/hardhat-verify": "^3.0.8",
-    "@typechain/ethers-v6": "^0.5.1",
-    "@typechain/hardhat": "^9.1.0",
     "chai": "^6.2.2",
-    "hardhat": "^2.28.3",
-    "hardhat-gas-reporter": "^2.3.0",
     "mocha": "^11.7.5",
     "socket.io-client": "^4.8.3",
-    "solidity-coverage": "^0.8.17"
+    "supertest": "^7.2.2"
   }
 }

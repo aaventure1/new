@@ -49,8 +49,8 @@ class SerenityEngine {
         this.particles = new THREE.Points(geometry, material);
         this.scene.add(this.particles);
 
-        // Evolutionary Passport - 3D Object
-        this.passport = null;
+        // Level artifact - 3D object that evolves with progress
+        this.levelArtifact = null;
         this.currentLevel = 1;
 
         this.animate();
@@ -58,13 +58,13 @@ class SerenityEngine {
     }
 
     /**
-     * Creates or updates the 3D Passport based on user level
+     * Creates or updates the level artifact based on user level
      */
-    updatePassport(level) {
+    updateLevelArtifact(level) {
         this.currentLevel = level;
-        
-        if (this.passport) {
-            this.scene.remove(this.passport);
+
+        if (this.levelArtifact) {
+            this.scene.remove(this.levelArtifact);
         }
 
         // Evolution logic: Simple -> Complex Geometry
@@ -87,9 +87,9 @@ class SerenityEngine {
         light.position.set(5, 5, 5);
         this.scene.add(light);
 
-        this.passport = new THREE.Mesh(geometry, material);
-        this.passport.position.set(0, 0, 0); // Positioned in background
-        this.scene.add(this.passport);
+        this.levelArtifact = new THREE.Mesh(geometry, material);
+        this.levelArtifact.position.set(0, 0, 0); // Positioned in background
+        this.scene.add(this.levelArtifact);
     }
 
     /**

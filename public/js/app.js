@@ -1,19 +1,12 @@
-// AAVenture Client Application
-const PASSPORT_ABI = [
-    "function mintPassport(uint256 _sobrietyDate) external",
-    "function hasPassport(address) view returns (bool)",
-    "function passportData(uint256) view returns (uint256 joinDate, uint256 sobrietyDate, uint256 meetingsAttended, bool isOfficial)",
-    "function ownerOf(uint256 tokenId) view returns (address)",
-    "event PassportMinted(address indexed user, uint256 tokenId, uint256 joinDate)"
-];
-
 class AAVentureApp {
     constructor() {
         this.currentUser = null;
         this.socket = null;
         this.currentRoom = null;
+        this.meetings = [];
         this.joinTime = null;
         this.typingTimeout = null;
+        this.attendanceFormBackendEnabled = true;
 
         // WebRTC properties
         this.localStream = null;
@@ -21,19 +14,13 @@ class AAVentureApp {
         this.isVideoOn = false;
         this.isAudioOn = true;
 
-        // Blockchain properties
-        this.userWallet = null;
-        this.ethersProvider = null;
-        this.ethersSigner = null;
-        this.passportAddress = null; // Will be fetched from server
-
         this.init();
     }
 
     init() {
-        this.loadConfig();
         this.checkAuth();
         this.setupEventListeners();
+        this.updateAdditionalRecipientVisibility();
         this.loadMeetings();
         this.loadJFT();
         this.checkSubscriptionSuccess();
@@ -44,7 +31,9 @@ class AAVentureApp {
 
     async checkAuth() {
         try {
-            const response = await fetch('/api/auth/me');
+            const response = await fetch('/api/auth/me', {
+                credentials: 'include'
+            });
             const data = await response.json();
             if (data.success) {
                 this.currentUser = data.user;
@@ -53,31 +42,28 @@ class AAVentureApp {
                 // Load user-specific data
                 this.loadAttendanceRecords();
                 window.statsManager?.loadStats();
+                this.initNeuralGuard();
+                this.loadAttendanceFormMetadata();
             } else {
+                this.currentUser = null;
                 this.updateUIForAuth();
             }
         } catch (error) {
             console.error('Auth check failed:', error);
+            this.currentUser = null;
+            this.updateUIForAuth();
         }
     }
 
-    async loadConfig() {
-        try {
-            const response = await fetch('/api/config');
-            const config = await response.json();
-            this.passportAddress = config.passportAddress;
-            this.tokenAddress = config.tokenAddress;
-            console.log('Blockchain config loaded:', config);
-        } catch (error) {
-            console.error('Failed to load config:', error);
-        }
-    }
+
 
     async initNeuralGuard() {
         if (!this.currentUser) return;
 
         try {
-            const response = await fetch('/api/auth/guard-status');
+            const response = await fetch('/api/auth/guard-status', {
+                credentials: 'include'
+            });
             const data = await response.json();
 
             if (data.success) {
@@ -94,6 +80,40 @@ class AAVentureApp {
             }
         } catch (error) {
             console.error('Neural Guard check failed');
+        }
+    }
+
+    initHeroStats() {
+        const liveMeetingsCount = document.getElementById('liveMeetingsCount');
+        if (liveMeetingsCount) {
+            // Simulated live count that changes slightly
+            setInterval(() => {
+                const base = 5;
+                const variation = Math.floor(Math.random() * 4);
+                liveMeetingsCount.textContent = `${base + variation} Meetings Active Right Now`;
+            }, 10000);
+        }
+    }
+
+    initPulseMeter() {
+        const pulseBarFill = document.getElementById('pulseBarFill');
+        const pulseValue = document.getElementById('pulseValue');
+
+        if (pulseBarFill && pulseValue) {
+            setInterval(() => {
+                const base = 75;
+                const variation = Math.floor(Math.random() * 10) - 5;
+                const total = Math.min(Math.max(base + variation, 60), 100);
+                pulseBarFill.style.width = `${total}%`;
+
+                if (total > 85) pulseValue.textContent = 'Exceptional';
+                else if (total > 70) pulseValue.textContent = 'Strong';
+                else pulseValue.textContent = 'Steady';
+
+                if (window.serenityEngine) {
+                    window.serenityEngine.setPulse(total);
+                }
+            }, 5000);
         }
     }
 
@@ -124,128 +144,26 @@ class AAVentureApp {
                 }
             }
 
-            // Innovative Link: Trigger 3D Passport Update
+            // Innovative Link: Update evolving 3D level artifact
             if (window.serenityEngine) {
-                window.serenityEngine.updatePassport(this.currentUser.level || 1);
+                window.serenityEngine.updateLevelArtifact(this.currentUser.level || 1);
             }
 
             // Show recovery dashboard
             document.getElementById('recoveryDashboard')?.classList.remove('hidden');
             document.getElementById('userLevel').textContent = this.currentUser.level || 1;
             document.getElementById('userXP').textContent = this.currentUser.xp || 0;
-
-            if (this.currentUser.isAdmin) {
-                adminNavLink.classList.remove('hidden');
-            } else {
-                adminNavLink.classList.add('hidden');
+            if (adminNavLink) {
+                adminNavLink.classList.toggle('hidden', !this.currentUser.isAdmin);
             }
 
-            // Check if user has wallet linked in DB
-            if (this.currentUser.walletAddress) {
-                this.userWallet = this.currentUser.walletAddress;
-                this.updateWalletUI();
-            }
         } else {
             navAuth.classList.remove('hidden');
             navUser.classList.add('hidden');
-        }
-    }
-
-    // Blockchain & Wallet
-    async connectWallet() {
-        if (typeof window.ethereum === 'undefined') {
-            this.showNotification('Please install MetaMask to use blockchain features', 'info');
-            return;
-        }
-
-        try {
-            this.ethersProvider = new ethers.BrowserProvider(window.ethereum);
-            const accounts = await this.ethersProvider.send("eth_requestAccounts", []);
-            this.ethersSigner = await this.ethersProvider.getSigner();
-            this.userWallet = accounts[0];
-
-            this.updateWalletUI();
-            this.showNotification('Wallet connected!', 'success');
-
-            // If on attendance page, load passport data
-            if (document.getElementById('attendancePage').classList.contains('active')) {
-                this.loadOnChainPassport();
+            document.getElementById('recoveryDashboard')?.classList.add('hidden');
+            if (adminNavLink) {
+                adminNavLink.classList.add('hidden');
             }
-        } catch (error) {
-            console.error('Wallet connection error:', error);
-            this.showNotification('Failed to connect wallet', 'error');
-        }
-    }
-
-    async updateWalletUI() {
-        const btn = document.getElementById('connectWalletBtn');
-        const balanceContainer = document.getElementById('walletBalance');
-
-        if (btn && this.userWallet) {
-            btn.textContent = `${this.userWallet.substring(0, 6)}...${this.userWallet.substring(38)}`;
-            btn.classList.add('connected');
-
-            if (balanceContainer) {
-                balanceContainer.classList.remove('hidden');
-                this.fetchBalance();
-            }
-        }
-    }
-
-    async fetchBalance() {
-        try {
-            const response = await fetch('/api/wallet/balance');
-            const data = await response.json();
-            if (data.success) {
-                const amountEl = document.getElementById('tokenAmount');
-                if (amountEl) {
-                    amountEl.textContent = parseFloat(data.balance).toFixed(1);
-                    // Minimal pulse effect on update
-                    amountEl.parentElement.style.transform = 'scale(1.1)';
-                    setTimeout(() => {
-                        if (amountEl.parentElement) amountEl.parentElement.style.transform = 'scale(1)';
-                    }, 300);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to fetch balance');
-        }
-    }
-
-    async loadOnChainPassport() {
-        const passportSection = document.getElementById('onChainPassport');
-        if (!this.userWallet) {
-            passportSection.classList.add('hidden');
-            return;
-        }
-
-        passportSection.classList.remove('hidden');
-
-        try {
-            // In a real app, you'd fetch from contract or backend
-            // For now, we'll simulate or use a mock fetch if contract not deployed
-            const sobrietyEl = document.getElementById('passportSobriety');
-            const meetingsEl = document.getElementById('passportMeetings');
-            const idEl = document.getElementById('passportId');
-
-            if (this.currentUser.onChainPassportId) {
-                idEl.textContent = this.currentUser.onChainPassportId;
-                // Fetch details from backend which queries blockchain
-                const response = await fetch(`/api/attendance/passport/${this.currentUser.onChainPassportId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    sobrietyEl.textContent = new Date(data.sobrietyDate * 1000).toLocaleDateString();
-                    meetingsEl.textContent = data.meetingsAttended;
-                    document.getElementById('mintPassportBtn').classList.add('hidden');
-                }
-            } else {
-                sobrietyEl.textContent = 'None';
-                meetingsEl.textContent = '0';
-                idEl.textContent = 'Not Minted';
-                document.getElementById('mintPassportBtn').classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Error loading passport:', error);
         }
     }
 
@@ -267,6 +185,7 @@ class AAVentureApp {
                 this.showNotification('Registration successful!', 'success');
                 this.openModal('welcomeOnboardingModal');
                 this.initOnboarding();
+                this.initNeuralGuard();
                 return true;
             } else {
                 this.showNotification(data.error || 'Registration failed', 'error');
@@ -294,6 +213,7 @@ class AAVentureApp {
                 this.updateUIForAuth();
                 this.closeModal('loginModal');
                 this.showNotification('Login successful!', 'success');
+                this.initNeuralGuard();
                 return true;
             } else {
                 this.showNotification(data.error || 'Login failed', 'error');
@@ -367,10 +287,10 @@ class AAVentureApp {
         blogList.innerHTML = posts.map(post => `
             <div class="blog-card">
                 <div class="blog-image">
-                    <img src="${post.featured_image}" alt="${post.title}">
+                    <img src="${post.featured_image || post.featuredImage || ''}" alt="${post.title}">
                 </div>
                 <div class="blog-content">
-                    <div class="blog-meta">${new Date(post.date).toLocaleDateString()} | By ${post.author}</div>
+                    <div class="blog-meta">${new Date(post.date || post.createdAt || Date.now()).toLocaleDateString()} | By ${post.author || 'AAVenture Team'}</div>
                     <h3>${post.title}</h3>
                     <p>${post.excerpt}</p>
                     <button class="btn btn-secondary btn-block">Read More</button>
@@ -386,6 +306,7 @@ class AAVentureApp {
             const data = await response.json();
 
             if (data.success) {
+                this.meetings = data.meetings;
                 this.displayMeetings(data.meetings);
             }
         } catch (error) {
@@ -441,15 +362,41 @@ class AAVentureApp {
         }).join('');
     }
 
-    joinExternalMeeting(meetingId, url, title) {
+    async joinExternalMeeting(meetingId, url, title) {
         if (!this.currentUser) {
             this.showNotification('Please login to track attendance', 'error');
             this.openModal('loginModal');
             return;
         }
 
+        try {
+            const joinResponse = await fetch(`/api/meetings/${meetingId}/join`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (!joinResponse.ok) {
+                this.showNotification('Unable to start attendance tracking', 'error');
+                return;
+            }
+        } catch (error) {
+            this.showNotification('Network error starting attendance tracking', 'error');
+            return;
+        }
+
         // Open Zoom in new tab
-        window.open(url, '_blank');
+        const meetingWindow = window.open(url, '_blank');
+        if (!meetingWindow) {
+            this.showNotification('Pop-up blocked! Please allow pop-ups to join.', 'error');
+            try {
+                await fetch(`/api/meetings/${meetingId}/leave`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Failed to clean up blocked join:', error);
+            }
+            return;
+        }
 
         // Start tracking on THIS tab
         this.currentMeetingId = meetingId;
@@ -473,9 +420,6 @@ class AAVentureApp {
                         Finish & Generate Certificate (Min 30m)
                     </button>
                     <button class="btn btn-secondary btn-block mt-1" onclick="app.cancelAttendance()">Cancel</button>
-                    
-                    <!-- DEBUG ONLY -->
-                    <button class="btn btn-outline btn-small mt-2" onclick="app.debugFastForward()">⏩ Debug: Fast Forward</button>
                 </div>
             </div>
         `;
@@ -504,17 +448,23 @@ class AAVentureApp {
         }, 1000);
     }
 
-    cancelAttendance() {
+    async cancelAttendance() {
         clearInterval(this.attendanceInterval);
-        document.getElementById('trackingModal').remove();
+        document.getElementById('trackingModal')?.remove();
+
+        if (this.currentMeetingId && this.currentUser) {
+            try {
+                await fetch(`/api/meetings/${this.currentMeetingId}/leave`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Failed to leave tracked meeting:', error);
+            }
+        }
+
         this.currentMeetingId = null;
         this.joinTime = null;
-    }
-
-    debugFastForward() {
-        // Artificially move join time back 31 minutes
-        this.joinTime = new Date(Date.now() - 31 * 60 * 1000);
-        this.showNotification('Debug: Time skipped forward 30 mins', 'success');
     }
 
     async joinMeeting(meetingId, roomId) {
@@ -918,7 +868,7 @@ class AAVentureApp {
                 </div>
                 <div class="user-actions">
                     ${user.userId !== this.currentUser.id ? `
-                        <button class="btn-icon tip-btn" onclick="app.tipUser('${user.chatName}')" title="Tip REC Tokens">🪙</button>
+
                         <button class="btn-icon" onclick="app.reportUser('${user.chatName}')" title="Report User">🚩</button>
                     ` : ''}
                 </div>
@@ -926,41 +876,7 @@ class AAVentureApp {
         `).join('');
     }
 
-    async tipUser(chatName) {
-        if (!this.userWallet) {
-            this.showNotification('Connect your wallet to send tips', 'info');
-            return;
-        }
 
-        const amount = prompt(`How many REC tokens would you like to tip ${chatName}?`, "10");
-        if (!amount || isNaN(amount)) return;
-
-        try {
-            const response = await fetch('/api/wallet/tip', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ recipientChatName: chatName, amount: parseFloat(amount) })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                this.showNotification(data.message, 'success');
-                // Notify via socket
-                this.socket.emit('send-message', {
-                    roomId: this.currentRoom,
-                    userId: 'system',
-                    chatName: 'System',
-                    message: `🌟 ${this.currentUser.chatName} tipped ${chatName} ${amount} REC tokens!`
-                });
-            } else {
-                this.showNotification(data.error || 'Tip failed', 'error');
-            }
-        } catch (error) {
-            this.showNotification('Network error', 'error');
-        }
-    }
 
     reportUser(chatName) {
         const reason = prompt(`Why are you reporting ${chatName}?`, "Harassment/Disrespect");
@@ -1005,12 +921,23 @@ class AAVentureApp {
         }, 10000);
     }
 
-    leaveChatRoom() {
+    async leaveChatRoom() {
         if (this.socket && this.currentRoom) {
             this.socket.emit('leave-room', {
                 roomId: this.currentRoom,
                 chatName: this.currentUser.chatName
             });
+        }
+
+        if (this.currentMeetingId && this.currentUser) {
+            try {
+                await fetch(`/api/meetings/${this.currentMeetingId}/leave`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Failed to mark meeting leave:', error);
+            }
         }
 
         this.currentRoom = null;
@@ -1119,11 +1046,6 @@ class AAVentureApp {
 
                 window.open(data.attendance.pdfUrl, '_blank');
 
-                // Refresh balance if token reward was successful
-                if (data.tokenReward === 'success' || data.tokenTx) {
-                    this.fetchBalance();
-                    this.showNotification('+10 REC Tokens Rewarded!', 'success');
-                }
                 if (data.recoveryData) {
                     window.statsManager?.renderStats(); // Refresh dashboard
                     if (data.recoveryData.newBadges && data.recoveryData.newBadges.length > 0) {
@@ -1244,13 +1166,27 @@ class AAVentureApp {
         }
     }
 
-    checkSubscriptionSuccess() {
+    async checkSubscriptionSuccess() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('session_id')) {
+        const sessionId = urlParams.get('session_id');
+        const planId = urlParams.get('planId');
+
+        if (sessionId) {
+            if (sessionId.startsWith('DEMO_')) {
+                // Activate demo subscription on backend
+                try {
+                    await fetch(`/api/subscription/demo-success?planId=${planId || '1month'}`, {
+                        credentials: 'include'
+                    });
+                } catch (error) {
+                    console.error('Demo activation failed:', error);
+                }
+            }
+
             // Clear the URL params without refreshing
             window.history.replaceState({}, document.title, window.location.pathname);
             this.navigateTo('success');
-            this.checkAuth(); // Refresh user data to get premium status
+            await this.checkAuth(); // Refresh user data to get premium status
         }
     }
 
@@ -1289,6 +1225,8 @@ class AAVentureApp {
                 this.loadBlog();
             } else if (pageName === 'admin') {
                 this.loadAdminStats();
+            } else if (pageName === 'verify' && this.currentUser) {
+                this.loadAttendanceFormMetadata();
             }
 
             window.scrollTo(0, 0);
@@ -1362,9 +1300,12 @@ class AAVentureApp {
             this.navigateTo(value);
             document.getElementById('serenityAI').classList.add('hidden');
         } else if (type === 'join') {
-            // Simplified join logic
-            if (value === 'open') {
-                this.enterChatRoom('open'); // Requires logic to map to ID, assuming 'open' works
+            const selectedMeeting = this.meetings.find(meeting => meeting.roomId === value);
+            if (selectedMeeting?._id) {
+                this.joinMeeting(selectedMeeting._id, selectedMeeting.roomId);
+            } else if (value) {
+                // Fallback for unknown room ids.
+                this.enterChatRoom(value);
             }
             document.getElementById('serenityAI').classList.add('hidden');
         } else if (type === 'modal') {
@@ -1387,8 +1328,12 @@ class AAVentureApp {
     // Admin Dashboard
     async loadAdminStats() {
         try {
-            const response = await fetch('/api/admin/stats', { credentials: 'include' });
-            const data = await response.json();
+            const [statsResponse, metricsResponse] = await Promise.all([
+                fetch('/api/admin/stats', { credentials: 'include' }),
+                fetch('/api/admin/attendance-metrics', { credentials: 'include' })
+            ]);
+
+            const data = await statsResponse.json();
             if (data.success) {
                 document.getElementById('adminStatUsers').textContent = data.stats.users;
                 document.getElementById('adminStatMeetings').textContent = data.stats.meetings;
@@ -1408,8 +1353,45 @@ class AAVentureApp {
                     feed.innerHTML = '<p class="text-gray">No recent activity found.</p>';
                 }
             }
+
+            const metricsData = await metricsResponse.json();
+            const metricsContainer = document.getElementById('adminAttendanceMetrics');
+            if (metricsContainer) {
+                if (metricsData.success && metricsData.metrics) {
+                    const counters = metricsData.metrics.counters || {};
+                    const timings = metricsData.metrics.timings || {};
+
+                    const metricItems = [];
+                    Object.entries(counters).forEach(([name, value]) => {
+                        metricItems.push(`
+                            <div class="metric-card">
+                                <div class="metric-name">${name}</div>
+                                <div class="metric-value">${value}</div>
+                            </div>
+                        `);
+                    });
+                    Object.entries(timings).forEach(([name, value]) => {
+                        metricItems.push(`
+                            <div class="metric-card">
+                                <div class="metric-name">${name}</div>
+                                <div class="metric-value">${value.avgMs}ms avg</div>
+                            </div>
+                        `);
+                    });
+
+                    metricsContainer.innerHTML = metricItems.length > 0
+                        ? metricItems.join('')
+                        : '<p class="text-gray">No attendance metrics captured yet.</p>';
+                } else {
+                    metricsContainer.innerHTML = '<p class="text-gray">Failed to load attendance metrics.</p>';
+                }
+            }
         } catch (error) {
             console.error('Failed to load admin stats:', error);
+            const metricsContainer = document.getElementById('adminAttendanceMetrics');
+            if (metricsContainer) {
+                metricsContainer.innerHTML = '<p class="text-gray">Failed to load attendance metrics.</p>';
+            }
         }
     }
 
@@ -1602,16 +1584,16 @@ class AAVentureApp {
             const data = await response.json();
 
             resultEl.classList.remove('hidden');
-            if (data.success && data.verified) {
+            if (data.success && data.certificate) {
                 const cert = data.certificate;
                 resultEl.innerHTML = `
                     <div class="result-badge success">✅ VERIFIED</div>
                     <div class="result-details">
-                        <p><strong>Attendee:</strong> ${cert.attendeeName}</p>
-                        <p><strong>Meeting:</strong> ${cert.meetingTitle} (${cert.meetingType})</p>
+                        <p><strong>Attendee:</strong> ${this.escapeHtml(cert.attendeeNameMasked || cert.userName || cert.attendeeName || 'Unknown')}</p>
+                        <p><strong>Meeting:</strong> ${this.escapeHtml(cert.meetingTitle || 'Meeting')} (${this.escapeHtml(cert.meetingType || 'N/A')})</p>
                         <p><strong>Date:</strong> ${new Date(cert.date).toLocaleDateString()}</p>
-                        <p><strong>Duration:</strong> ${cert.duration} minutes</p>
-                        <p><strong>Issued:</strong> ${new Date(cert.issuedDate).toLocaleDateString()}</p>
+                        <p><strong>Duration:</strong> ${Number(cert.duration || 0)} minutes</p>
+                        <p><strong>Certificate ID:</strong> ${this.escapeHtml(cert.id || certId)}</p>
                     </div>
                 `;
             } else {
@@ -1622,6 +1604,248 @@ class AAVentureApp {
             }
         } catch (error) {
             this.showNotification('Verification failed', 'error');
+        }
+    }
+
+    updateAdditionalRecipientVisibility() {
+        const choiceEl = document.getElementById('extraRecipientChoice');
+        const recipientGroup = document.getElementById('extraRecipientEmailGroup');
+        if (!choiceEl || !recipientGroup) return;
+
+        const showExtraRecipient = choiceEl.value === 'yes';
+        recipientGroup.classList.toggle('hidden', !showExtraRecipient);
+    }
+
+    setAttendanceFormStatus(message = '', isError = false) {
+        const statusEl = document.getElementById('attendanceFormStatus');
+        if (!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.style.color = isError ? '#b91c1c' : 'var(--gray)';
+    }
+
+    setAttendanceFieldErrors(errors = {}) {
+        document.querySelectorAll('#meetingAttendanceForm .field-error').forEach((el) => {
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('#meetingAttendanceForm input, #meetingAttendanceForm textarea, #meetingAttendanceForm select').forEach((el) => {
+            el.classList.remove('input-error');
+        });
+
+        Object.entries(errors).forEach(([fieldId, message]) => {
+            const inputEl = document.getElementById(fieldId);
+            const errorEl = document.querySelector(`[data-error-for="${fieldId}"]`);
+            if (inputEl) inputEl.classList.add('input-error');
+            if (errorEl) {
+                errorEl.textContent = message || 'The field is required.';
+                errorEl.classList.remove('hidden');
+            }
+        });
+    }
+
+    validateMeetingAttendanceForm() {
+        const requiredFields = [
+            'attendeeFullName',
+            'attendeeEmail',
+            'extraRecipientChoice',
+            'meetingDateInput',
+            'meetingTimeInput',
+            'meetingTopicInput',
+            'meetingChairpersonInput',
+            'participationInfoInput'
+        ];
+
+        const choiceEl = document.getElementById('extraRecipientChoice');
+        if (choiceEl?.value === 'yes') {
+            requiredFields.push('extraRecipientEmail');
+        }
+
+        let hasErrors = false;
+        requiredFields.forEach((fieldId) => {
+            const inputEl = document.getElementById(fieldId);
+            const errorEl = document.querySelector(`[data-error-for="${fieldId}"]`);
+            const value = inputEl?.value?.trim() || '';
+            const fieldHasError = value.length === 0;
+
+            if (errorEl) {
+                errorEl.classList.toggle('hidden', !fieldHasError);
+            }
+            if (inputEl) {
+                inputEl.classList.toggle('input-error', fieldHasError);
+            }
+            if (fieldHasError) hasErrors = true;
+        });
+
+        const emailEl = document.getElementById('attendeeEmail');
+        if (emailEl?.value?.trim()) {
+            const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value.trim());
+            if (!validEmail) {
+                hasErrors = true;
+                emailEl.classList.add('input-error');
+                const emailError = document.querySelector('[data-error-for="attendeeEmail"]');
+                if (emailError) {
+                    emailError.textContent = 'The field is required.';
+                    emailError.classList.remove('hidden');
+                }
+            }
+        }
+
+        const topError = document.getElementById('attendanceFormTopError');
+        const bottomError = document.getElementById('attendanceFormBottomError');
+        topError?.classList.toggle('hidden', !hasErrors);
+        bottomError?.classList.toggle('hidden', !hasErrors);
+
+        return !hasErrors;
+    }
+
+    async loadAttendanceFormMetadata() {
+        try {
+            const response = await fetch('/api/attendance/verification-form-metadata', {
+                credentials: 'include'
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            const meetingIdDisplayEl = document.getElementById('meetingIdDisplay');
+            if (meetingIdDisplayEl && data.meetingIdDisplay) {
+                meetingIdDisplayEl.value = data.meetingIdDisplay;
+            }
+            this.attendanceFormBackendEnabled = data.featureEnabled !== false;
+            if (!data.featureEnabled) {
+                this.setAttendanceFormStatus('Attendance form backend is currently disabled. Local validation is still available.', true);
+            }
+        } catch (error) {
+            console.error('Attendance form metadata load failed:', error);
+        }
+    }
+
+    async requestAttendanceHelper(fieldType) {
+        try {
+            const payload = {
+                meetingTopic: document.getElementById('meetingTopicInput')?.value || '',
+                meetingChairperson: document.getElementById('meetingChairpersonInput')?.value || '',
+                participationInfo: document.getElementById('participationInfoInput')?.value || ''
+            };
+
+            const response = await fetch('/api/attendance/helper-suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                this.showNotification(data.error || 'Unable to get helper suggestions', 'error');
+                return;
+            }
+
+            const targetBox = fieldType === 'topic'
+                ? document.getElementById('meetingTopicSuggestionBox')
+                : document.getElementById('participationSuggestionBox');
+
+            const suggestion = fieldType === 'topic'
+                ? data.meetingTopicSuggestion
+                : data.participationInfoSuggestion;
+
+            if (!targetBox) return;
+            targetBox.classList.remove('hidden');
+            targetBox.innerHTML = `
+                <p><strong>Suggestion:</strong> ${this.escapeHtml(suggestion || '')}</p>
+                <p><small>${this.escapeHtml(data.disclaimer || 'Review and edit before submitting.')}</small></p>
+                ${Array.isArray(data.qualityWarnings) && data.qualityWarnings.length ? `<p><small>Warnings: ${this.escapeHtml(data.qualityWarnings.join(' | '))}</small></p>` : ''}
+                <button type="button" class="btn btn-primary btn-small" data-use-helper="${fieldType}">Use suggestion</button>
+            `;
+        } catch (error) {
+            console.error('Attendance helper request failed:', error);
+            this.showNotification('Unable to get helper suggestions', 'error');
+        }
+    }
+
+    applyHelperSuggestion(fieldType) {
+        const box = fieldType === 'topic'
+            ? document.getElementById('meetingTopicSuggestionBox')
+            : document.getElementById('participationSuggestionBox');
+        if (!box) return;
+
+        const suggestionLine = box.querySelector('p');
+        if (!suggestionLine) return;
+        const suggestionText = suggestionLine.textContent.replace(/^Suggestion:\s*/, '').trim();
+        if (!suggestionText) return;
+
+        const inputEl = fieldType === 'topic'
+            ? document.getElementById('meetingTopicInput')
+            : document.getElementById('participationInfoInput');
+        if (!inputEl) return;
+        inputEl.value = suggestionText;
+        this.showNotification('Suggestion applied. Review before submitting.', 'success');
+    }
+
+    async handleMeetingAttendanceSubmit(event) {
+        event.preventDefault();
+        this.setAttendanceFormStatus('');
+        const valid = this.validateMeetingAttendanceForm();
+        if (!valid) {
+            this.showNotification('One or more fields have an error. Please check and try again.', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitAttendanceFormBtn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        }
+
+        if (!this.attendanceFormBackendEnabled) {
+            this.showNotification('Attendance form validated locally. Backend submission is currently disabled.', 'info');
+            this.setAttendanceFormStatus('Validated locally. Backend is disabled right now.');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Attendance Form';
+            }
+            return;
+        }
+
+        const payload = {
+            fullName: document.getElementById('attendeeFullName')?.value?.trim(),
+            email: document.getElementById('attendeeEmail')?.value?.trim(),
+            sendAdditionalRecipient: document.getElementById('extraRecipientChoice')?.value,
+            additionalRecipientEmail: document.getElementById('extraRecipientEmail')?.value?.trim(),
+            meetingIdDisplay: document.getElementById('meetingIdDisplay')?.value?.trim(),
+            meetingDate: document.getElementById('meetingDateInput')?.value?.trim(),
+            meetingTime: document.getElementById('meetingTimeInput')?.value?.trim(),
+            meetingTopic: document.getElementById('meetingTopicInput')?.value?.trim(),
+            meetingChairperson: document.getElementById('meetingChairpersonInput')?.value?.trim(),
+            participationInfo: document.getElementById('participationInfoInput')?.value?.trim()
+        };
+
+        try {
+            const response = await fetch('/api/attendance/submit-verification-form', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                this.setAttendanceFieldErrors(data.validationErrors || {});
+                document.getElementById('attendanceFormTopError')?.classList.remove('hidden');
+                document.getElementById('attendanceFormBottomError')?.classList.remove('hidden');
+                this.setAttendanceFormStatus(data.error || 'One or more fields have an error. Please check and try again.', true);
+                this.showNotification(data.error || 'Unable to submit attendance form', 'error');
+                return;
+            }
+
+            this.showNotification(data.message || 'Attendance form submitted successfully.', 'success');
+            this.setAttendanceFormStatus(`Submitted successfully. Revision ${Number(data.revision || 1)}${data.linkedCertificateId ? ` | Linked certificate: ${data.linkedCertificateId}` : ''}`);
+            document.getElementById('attendanceFormTopError')?.classList.add('hidden');
+            document.getElementById('attendanceFormBottomError')?.classList.add('hidden');
+            this.setAttendanceFieldErrors({});
+        } catch (error) {
+            this.setAttendanceFormStatus('Unable to submit right now. Please try again.', true);
+            this.showNotification('Unable to submit attendance form', 'error');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Attendance Form';
+            }
         }
     }
 
@@ -1683,9 +1907,7 @@ class AAVentureApp {
             this.logout();
         });
 
-        document.getElementById('connectWalletBtn')?.addEventListener('click', () => {
-            this.connectWallet();
-        });
+
 
         document.getElementById('privacyToggleBtn')?.addEventListener('click', () => {
             this.togglePrivacyMode();
@@ -1869,6 +2091,30 @@ class AAVentureApp {
             this.checkVerification();
         });
 
+        document.getElementById('extraRecipientChoice')?.addEventListener('change', () => {
+            this.updateAdditionalRecipientVisibility();
+        });
+
+        document.getElementById('meetingAttendanceForm')?.addEventListener('submit', (e) => {
+            this.handleMeetingAttendanceSubmit(e);
+        });
+
+        document.getElementById('meetingTopicHelperBtn')?.addEventListener('click', () => {
+            this.requestAttendanceHelper('topic');
+        });
+
+        document.getElementById('participationHelperBtn')?.addEventListener('click', () => {
+            this.requestAttendanceHelper('participation');
+        });
+
+        document.addEventListener('click', (e) => {
+            const target = e.target;
+            if (!(target instanceof HTMLElement)) return;
+            const useField = target.dataset?.useHelper;
+            if (!useField) return;
+            this.applyHelperSuggestion(useField);
+        });
+
         // Resources Navigation
         document.querySelectorAll('[data-resource]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1896,79 +2142,7 @@ class AAVentureApp {
             this.navigateTo('subscription');
         });
 
-        document.getElementById('mintPassportBtn')?.addEventListener('click', async () => {
-            if (!this.userWallet || !this.ethersSigner) {
-                this.showNotification('Please connect your wallet first', 'info');
-                return;
-            }
 
-            // SIMULATION MODE if contract not deployed
-            if (!this.passportAddress) {
-                this.showNotification('Demo Mode: Simulating blockchain interaction...', 'info');
-
-                const sobrietyDateStr = prompt("Please enter your sobriety date (YYYY-MM-DD):", "2024-01-01");
-                if (!sobrietyDateStr) return;
-
-                const mockId = `SIM-${Math.floor(Math.random() * 1000000)}`;
-
-                setTimeout(async () => {
-                    try {
-                        const linkResponse = await fetch('/api/attendance/link-passport', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ passportId: mockId })
-                        });
-
-                        if (linkResponse.ok) {
-                            this.showNotification('Transaction confirmed (Simulation)', 'success');
-                            this.showNotification('Passport minted successfully!', 'success');
-
-                            document.getElementById('passportSobriety').textContent = new Date(sobrietyDateStr).toLocaleDateString();
-                            document.getElementById('passportMeetings').textContent = '0';
-                            document.getElementById('passportId').textContent = mockId;
-                            document.getElementById('mintPassportBtn').classList.add('hidden');
-                        }
-                    } catch (e) {
-                        this.showNotification('Failed to save simulated passport', 'error');
-                    }
-                }, 2000);
-                return;
-            }
-
-            try {
-                this.showNotification('Initiating minting process...', 'info');
-
-                const contract = new ethers.Contract(this.passportAddress, PASSPORT_ABI, this.ethersSigner);
-
-                const sobrietyDateStr = prompt("Please enter your sobriety date (YYYY-MM-DD):", "2024-01-01");
-                if (!sobrietyDateStr) return;
-
-                const sobrietyTimestamp = Math.floor(new Date(sobrietyDateStr).getTime() / 1000);
-
-                const tx = await contract.mintPassport(sobrietyTimestamp);
-                this.showNotification('Transaction sent! Waiting for confirmation...', 'info');
-
-                const receipt = await tx.wait();
-
-                // In a production app, you might parse the event to get the tokenId
-                // For now we'll assume the backend can find it or we use a standard way
-                const tokenId = receipt.logs[0].args[1]; // simplified
-
-                const linkResponse = await fetch('/api/attendance/link-passport', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ passportId: tokenId.toString() })
-                });
-
-                if (linkResponse.ok) {
-                    this.showNotification('Passport minted successfully!', 'success');
-                    this.loadOnChainPassport();
-                }
-            } catch (error) {
-                console.error('Minting error:', error);
-                this.showNotification(error.reason || 'Failed to mint passport', 'error');
-            }
-        });
 
         // Admin Tabs
         document.querySelectorAll('[data-admin-tab]').forEach(btn => {
@@ -2109,6 +2283,13 @@ class AAVentureApp {
         }
     }
 
+    showBadgeNotification(badge) {
+        if (!badge) return;
+        const icon = badge.icon || '🏅';
+        const name = badge.name || 'New Badge';
+        this.showNotification(`${icon} Badge unlocked: ${name}`, 'success');
+    }
+
     initOnboarding() {
         let currentStep = 1;
         const totalSteps = 3;
@@ -2179,6 +2360,7 @@ class AAVentureApp {
 
     async mirrorExternalMeeting() {
         const urlInput = document.getElementById('externalMirrorUrl');
+        if (!urlInput) return;
         let url = urlInput.value.trim();
 
         if (!url) {
@@ -2197,16 +2379,45 @@ class AAVentureApp {
 
         this.showNotification('Connecting to external stream...', 'info');
 
+        // Use a real meeting id so certificate generation can be validated server-side.
+        const fallbackMeeting = this.meetings.find(m => m.roomId === 'open') || this.meetings[0];
+        if (!fallbackMeeting?._id) {
+            this.showNotification('Meetings are still loading. Please try again in a moment.', 'error');
+            return;
+        }
+
+        try {
+            const joinResponse = await fetch(`/api/meetings/${fallbackMeeting._id}/join`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (!joinResponse.ok) {
+                this.showNotification('Unable to start mirrored attendance tracking', 'error');
+                return;
+            }
+        } catch (error) {
+            this.showNotification('Network error starting mirrored attendance tracking', 'error');
+            return;
+        }
+
         // Open Zoom/Meeting in new window (most reliable due to X-Frame-Options)
         const MeetingWindow = window.open(url, '_blank');
 
         if (!MeetingWindow) {
             this.showNotification('Pop-up blocked! Please allow pop-ups for mirroring.', 'error');
+            try {
+                await fetch(`/api/meetings/${fallbackMeeting._id}/leave`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Failed to clean up blocked mirrored join:', error);
+            }
             return;
         }
 
         // Start tracking on the current page
-        this.currentMeetingId = "mirrored-" + Math.random().toString(36).substring(2, 9);
+        this.currentMeetingId = fallbackMeeting._id;
         this.joinTime = new Date();
         this.showTrackingModal("Mirrored Session: External Room Active");
 
@@ -2233,4 +2444,3 @@ class AAVentureApp {
 // Initialize app
 const app = new AAVentureApp();
 window.app = app;
-

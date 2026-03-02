@@ -4,20 +4,19 @@ services:
     env: docker
     plan: free
     branch: main
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: BASE_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
-      - key: BLOCKCHAIN_RPC_URL
-        sync: false
-      - key: BLOCKCHAIN_PRIVATE_KEY
-        sync: false
-      - key: PASSPORT_CONTRACT_ADDRESS
-        sync: false
-      - key: RECOVERY_TOKEN_ADDRESS
-        sync: false

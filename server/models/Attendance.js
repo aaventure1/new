@@ -48,6 +48,19 @@ const attendanceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    submissionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AttendanceSubmission',
+        default: null
+    },
+    attendeeFullNameMasked: {
+        type: String,
+        default: null
+    },
+    verificationPublicNotes: {
+        type: String,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now

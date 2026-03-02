@@ -1,14 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
+
+const serenityLimiter = createRateLimiter({
+    key: 'serenity-chat',
+    windowMs: 60 * 1000,
+    max: 30,
+    message: 'Serenity is receiving a high volume of requests. Please try again in a moment.'
+});
 
 // This would ideally connect to OpenAI or Anthropic API
 // For the demo, we use a robust recovery-focused AI logic
-router.post('/chat', async (req, res) => {
+router.post('/chat', serenityLimiter, async (req, res) => {
     try {
         const { message, userId } = req.body;
+        if (!message || typeof message !== 'string') {
+            return res.status(400).json({ success: false, error: 'Message is required' });
+        }
+        if (message.length > 2000) {
+            return res.status(400).json({ success: false, error: 'Message is too long' });
+        }
 
-        console.log(`🤖 Serenity processing message: "${message}"`);
+        console.log(`🤖 Serenity processing message: "${message.slice(0, 120)}"`);
 
         // Simulate "Web Search" and "Thinking"
         await new Promise(resolve => setTimeout(resolve, 1500));

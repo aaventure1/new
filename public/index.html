@@ -82,15 +82,8 @@
                 <button class="btn btn-primary" id="registerBtn">Register</button>
             </div>
             <div class="nav-user hidden" id="navUser">
-                <div class="wallet-info-container"
-                    style="display: inline-flex; align-items: center; gap: 10px; margin-right: 15px;">
-                    <div id="walletBalance" class="wallet-balance hidden"
-                        style="font-size: 0.8rem; font-weight: 700; background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 20px; color: var(--primary);">
-                        <span id="tokenAmount">0</span> REC
-                    </div>
-                    <button class="btn btn-outline btn-small" id="connectWalletBtn">Connect Wallet</button>
-                </div>
                 <div class="nav-user-actions" style="display: flex; align-items: center; gap: 10px;">
+
                     <button class="btn btn-outline btn-small" id="privacyToggleBtn" title="Toggle Anonymity Mode">👤
                         Private: OFF</button>
                 </div>
@@ -370,12 +363,7 @@
                             verification system."</p>
                         <div class="testimonial-author">- Michael R., 6 months sober</div>
                     </div>
-                    <div class="testimonial-card glass-card">
-                        <div class="testimonial-stars">★★★★★</div>
-                        <p>"I love the on-chain passport. It feels like a real accomplishment to see my sobriety tracked
-                            on the blockchain."</p>
-                        <div class="testimonial-author">- David K., 1 year sober</div>
-                    </div>
+
                 </div>
             </div>
 
@@ -497,26 +485,7 @@
                 <p>View your attendance records and download certificates</p>
             </div>
             <div class="attendance-container">
-                <div id="onChainPassport" class="glass-card mb-2 hidden">
-                    <h3>🛡️ Recovery Passport (On-Chain)</h3>
-                    <div class="passport-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Sobriety Date</span>
-                            <span class="stat-value" id="passportSobriety">Loading...</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">On-Chain Meetings</span>
-                            <span class="stat-value" id="passportMeetings">Loading...</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Passport ID</span>
-                            <span class="stat-value" id="passportId">Loading...</span>
-                        </div>
-                    </div>
-                    <div class="passport-actions mt-2">
-                        <button class="btn btn-secondary btn-small" id="mintPassportBtn">Mint My Passport</button>
-                    </div>
-                </div>
+
                 <div class="subscription-notice" id="subscriptionNotice">
                     <h3>⚠️ Subscription Required</h3>
                     <p>To generate court-ordered proof of attendance certificates, you need an active subscription.</p>
@@ -716,6 +685,107 @@
                         <!-- Result details will appear here -->
                     </div>
                 </div>
+
+                <div class="glass-card attendance-verification-card">
+                    <h3>Online Meeting Attendance Form</h3>
+
+                    <div id="attendanceFormTopError" class="attendance-form-global-error hidden" aria-live="polite">
+                        <p><strong>One or more fields have an error. Please check and try again.</strong></p>
+                    </div>
+
+                    <p class="attendance-form-instruction">
+                        Check in to the meeting when you arrive, submit the form when the meeting has ended. Your
+                        check in and submit time will be printed on your certificate.
+                    </p>
+
+                    <p class="attendance-form-note">
+                        The username you're currently logged in with has already been recorded. Please fill out the
+                        following additional information about the meeting you've attended:
+                    </p>
+
+                    <form id="meetingAttendanceForm" novalidate>
+                        <div class="form-group">
+                            <label for="attendeeFullName">Your Full Name (will be used on your form)</label>
+                            <input type="text" id="attendeeFullName" name="fullName">
+                            <p class="field-error hidden" data-error-for="attendeeFullName">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="attendeeEmail">Your Email (required)</label>
+                            <input type="email" id="attendeeEmail" name="email">
+                            <p class="field-error hidden" data-error-for="attendeeEmail">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="extraRecipientChoice">Send Proof of Attendance to Additional Recipient?
+                                (required)</label>
+                            <select id="extraRecipientChoice" name="extraRecipientChoice">
+                                <option value="">-- CHOOSE ONE --</option>
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                            <p class="field-error hidden" data-error-for="extraRecipientChoice">The field is required.</p>
+                        </div>
+
+                        <div class="form-group hidden" id="extraRecipientEmailGroup">
+                            <label for="extraRecipientEmail">Additional Recipient Email</label>
+                            <input type="email" id="extraRecipientEmail" name="extraRecipientEmail">
+                            <p class="field-error hidden" data-error-for="extraRecipientEmail">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="meetingIdDisplay">Meeting ID (cannot be edited - ID below is specific to your user,
+                                the meeting date, and the meeting time)</label>
+                            <input type="text" id="meetingIdDisplay" name="meetingIdDisplay" readonly value="[userdatebase64]">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="meetingDateInput">Meeting Date (required)</label>
+                            <input type="date" id="meetingDateInput" name="meetingDate">
+                            <p class="field-error hidden" data-error-for="meetingDateInput">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="meetingTimeInput">Meeting Time (required)</label>
+                            <input type="text" id="meetingTimeInput" name="meetingTime" placeholder="7:00PM EDT">
+                            <p class="field-error hidden" data-error-for="meetingTimeInput">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="meetingTopicInput">Meeting Topic (required - please put the actual topic, NOT the meeting
+                                name)</label>
+                            <input type="text" id="meetingTopicInput" name="meetingTopic">
+                            <button type="button" class="btn btn-secondary btn-small mt-1"
+                                id="meetingTopicHelperBtn">Get help writing this</button>
+                            <div id="meetingTopicSuggestionBox" class="helper-suggestion-box hidden"></div>
+                            <p class="field-error hidden" data-error-for="meetingTopicInput">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="meetingChairpersonInput">Meeting Chairperson (required)</label>
+                            <input type="text" id="meetingChairpersonInput" name="meetingChairperson">
+                            <p class="field-error hidden" data-error-for="meetingChairpersonInput">The field is required.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="participationInfoInput">Describe How You Participated/Additional Info
+                                (required)</label>
+                            <textarea id="participationInfoInput" name="participationInfo"
+                                placeholder='(example: "I shared", or "I just listened")'></textarea>
+                            <button type="button" class="btn btn-secondary btn-small mt-1"
+                                id="participationHelperBtn">Get help writing this</button>
+                            <div id="participationSuggestionBox" class="helper-suggestion-box hidden"></div>
+                            <p class="field-error hidden" data-error-for="participationInfoInput">The field is required.</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block" id="submitAttendanceFormBtn">Submit Attendance Form</button>
+                        <p id="attendanceFormStatus" class="attendance-form-status" aria-live="polite"></p>
+                    </form>
+
+                    <div id="attendanceFormBottomError" class="attendance-form-global-error hidden" aria-live="polite">
+                        <p><strong>One or more fields have an error. Please check and try again.</strong></p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -768,6 +838,13 @@
                         <h3>Recent Activity</h3>
                         <div id="adminActivityFeed" class="activity-feed">
                             <p class="text-gray">No recent activity found.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card mt-2">
+                        <h3>Attendance Metrics</h3>
+                        <div id="adminAttendanceMetrics" class="metrics-grid">
+                            <p class="text-gray">Metrics are loading...</p>
                         </div>
                     </div>
                 </div>
@@ -977,9 +1054,10 @@
                 <div class="step hidden" data-step="3">
                     <span style="font-size: 4rem;">🛡️</span>
                     <h2>Verified Progress</h2>
-                    <p>Earn REC tokens for attending, mint your Recovery Passport on-chain, and level up your recovery
-                        journey with every meeting.</p>
+                    <p>Build your recovery streak, earn achievement badges, and level up your recovery journey with
+                        every meeting you attend.</p>
                 </div>
+
             </div>
             <div class="modal-footer mt-2">
                 <button class="btn btn-primary btn-block" id="nextOnboardingBtn">Next</button>
@@ -1055,7 +1133,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
+
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="/js/urge-surfer.js"></script>
     <script src="/js/serenity-engine.js"></script>

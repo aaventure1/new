@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a new feature or improvement.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    attributes:
+      label: Problem
+      description: What user problem does this solve?
+      placeholder: Describe the pain point.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposal
+      description: What should we build?
+      placeholder: Describe your proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Alternatives considered
+      placeholder: Any other options you considered?
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional context
+      placeholder: Mockups, references, screenshots, links.
+    validations:
+      required: false

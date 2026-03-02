@@ -3,31 +3,62 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
 const { sendWelcomeEmail } = require('../utils/emailUtils');
 const SoberGuard = require('../utils/soberGuard');
+const RecoveryStatsManager = require('../utils/recoveryStats');
+
+const getJwtSecret = () => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret.includes('change-in-production')) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('JWT_SECRET is not configured safely for production');
+        }
+    }
+    return secret || 'dev-insecure-secret';
+};
+
+const registerLimiter = createRateLimiter({
+    key: 'auth-register',
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: 'Too many registration attempts. Please wait a few minutes and try again.'
+});
+
+const loginLimiter = createRateLimiter({
+    key: 'auth-login',
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: 'Too many login attempts. Please wait a few minutes and try again.'
+});
 
 // Register new user
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
     try {
         const { username, email, password, chatName } = req.body;
+        const normalizedUsername = typeof username === 'string' ? username.trim() : '';
+        const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+        const normalizedChatName = typeof chatName === 'string' ? chatName.trim() : '';
 
         // Validation
-        if (!username || !email || !password || !chatName) {
+        if (!normalizedUsername || !normalizedEmail || !password || !normalizedChatName) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
         // Check if user already exists
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+        const existingUser = await User.findOne({
+            $or: [{ email: normalizedEmail }, { username: normalizedUsername }]
+        });
         if (existingUser) {
             return res.status(400).json({ error: 'User already exists with this email or username' });
         }
 
         // Create new user
         const user = new User({
-            username,
-            email,
+            username: normalizedUsername,
+            email: normalizedEmail,
             password,
-            chatName
+            chatName: normalizedChatName
         });
 
         await user.save();
@@ -38,7 +69,7 @@ router.post('/register', async (req, res) => {
         // Generate JWT token
         const token = jwt.sign(
             { userId: user._id },
-            process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+            getJwtSecret(),
             { expiresIn: '7d' }
         );
 
@@ -62,21 +93,25 @@ router.post('/register', async (req, res) => {
         });
     } catch (error) {
         console.error('Registration error:', error);
+        if (error && error.code === 11000) {
+            return res.status(400).json({ error: 'User already exists with this email or username' });
+        }
         res.status(500).json({ error: 'Server error during registration' });
     }
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
+        const normalizedEmail = typeof email === 'string' ? email.toLowerCase().trim() : '';
 
-        if (!email || !password) {
+        if (!normalizedEmail || !password) {
             return res.status(400).json({ error: 'Email and password are required' });
         }
 
         // Find user
-        const user = await User.findOne({ email: email.toLowerCase() });
+        const user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -94,7 +129,7 @@ router.post('/login', async (req, res) => {
         // Generate JWT token
         const token = jwt.sign(
             { userId: user._id },
-            process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+            getJwtSecret(),
             { expiresIn: '7d' }
         );
 
@@ -112,6 +147,7 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 chatName: user.chatName,
                 subscription: user.subscription,
+                isAdmin: user.isAdmin,
                 hasActiveSubscription: user.hasActiveSubscription()
             }
         });
@@ -133,6 +169,7 @@ router.get('/me', auth, async (req, res) => {
                 chatName: req.user.chatName,
                 subscription: req.user.subscription,
                 subscriptionExpiry: req.user.subscriptionExpiry,
+                isAdmin: req.user.isAdmin,
                 hasActiveSubscription: req.user.hasActiveSubscription(),
                 attendanceCount: req.user.attendanceRecords.length,
                 xp: req.user.xp,
@@ -199,7 +236,6 @@ router.post('/privacy-toggle', auth, async (req, res) => {
         if (req.user.anonymousMode) {
             req.user.privacySettings.hideProfile = true;
             req.user.privacySettings.hideSobrietyDate = true;
-            req.user.privacySettings.hideBlockchainData = true;
         }
 
         await req.user.save();

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Meeting = require('../models/Meeting');
-const { auth } = require('../middleware/auth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 // Get all meetings
 router.get('/', async (req, res) => {
@@ -57,18 +57,38 @@ router.get('/type/:type', async (req, res) => {
 });
 
 // Create new meeting (admin only - simplified for now)
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, adminAuth, async (req, res) => {
     try {
         const { title, type, format, roomId, description, schedule, zoomLink } = req.body;
+        const safeTitle = typeof title === 'string' ? title.trim() : '';
+        const safeRoomId = typeof roomId === 'string' ? roomId.trim().toLowerCase() : '';
+        const normalizedType = typeof type === 'string' ? type.trim().toLowerCase() : '';
+        const normalizedFormat = typeof format === 'string' ? format.trim().toLowerCase() : '';
+        const safeType = ({
+            aa: 'AA',
+            na: 'NA',
+            christian: 'Christian',
+            open: 'Open',
+            zoom: 'Zoom'
+        })[normalizedType] || (typeof type === 'string' ? type.trim() : '');
+        const safeFormat = ({
+            text: 'text',
+            video: 'video',
+            hybrid: 'hybrid'
+        })[normalizedFormat] || (typeof format === 'string' ? format.trim() : '');
+
+        if (!safeTitle || !safeRoomId || !safeType || !safeFormat) {
+            return res.status(400).json({ error: 'title, type, format, and roomId are required' });
+        }
 
         const meeting = new Meeting({
-            title,
-            type,
-            format,
-            roomId,
-            description,
+            title: safeTitle,
+            type: safeType,
+            format: safeFormat,
+            roomId: safeRoomId,
+            description: typeof description === 'string' ? description.trim() : '',
             schedule,
-            zoomLink
+            zoomLink: typeof zoomLink === 'string' ? zoomLink.trim() : null
         });
 
         await meeting.save();

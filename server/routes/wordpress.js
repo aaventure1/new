@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const BlogPost = require('../models/BlogPost');
 const { syncWordPressPosts } = require('../utils/blogAutomation');
+const { auth, adminAuth } = require('../middleware/auth');
 
 // Get Blog Posts
 router.get('/posts', async (req, res) => {
     try {
         const { category, limit = 10 } = req.query;
+        const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
         let query = {};
 
         if (category) {
@@ -15,14 +17,14 @@ router.get('/posts', async (req, res) => {
 
         let posts = await BlogPost.find(query)
             .sort({ createdAt: -1 })
-            .limit(parseInt(limit));
+            .limit(parsedLimit);
 
         // If no posts in DB, try to sync once
         if (posts.length === 0) {
             await syncWordPressPosts();
             posts = await BlogPost.find(query)
                 .sort({ createdAt: -1 })
-                .limit(parseInt(limit));
+                .limit(parsedLimit);
         }
 
         res.json(posts);
@@ -34,7 +36,7 @@ router.get('/posts', async (req, res) => {
 });
 
 // Sync posts (Admin only)
-router.post('/sync', async (req, res) => {
+router.post('/sync', auth, adminAuth, async (req, res) => {
     try {
         const count = await syncWordPressPosts();
         res.json({ success: true, added: count });

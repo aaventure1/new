@@ -2,6 +2,17 @@
 
 A comprehensive online platform for AA, NA, and recovery support meetings with court-ordered proof of attendance certificates. Built to replicate and enhance the 12step-online.com business model.
 
+## 🤝 Help Build This
+
+We are actively looking for contributors and early collaborators.
+
+- Start here: `CONTRIBUTING.md`
+- Roadmap: `docs/OPEN_SOURCE_ROADMAP.md`
+- Open issues labeled `help wanted` and `good first issue` are ideal entry points.
+- Community expectations: `CODE_OF_CONDUCT.md`
+- Security reporting: `SECURITY.md`
+- Go-live gate: `docs/GO_LIVE_SECURITY_CHECKLIST.md`
+
 ## 🌟 Features
 
 ### Core Features
@@ -25,7 +36,7 @@ A comprehensive online platform for AA, NA, and recovery support meetings with c
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v14 or higher)
+- Node.js (v20.19 or higher)
 - MongoDB (v4.4 or higher)
 - Stripe account (for payments)
 

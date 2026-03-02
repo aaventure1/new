@@ -1,0 +1,33 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: aaventure-wp-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:6.6-php8.2-apache
+    container_name: aaventure-wp
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      AAVENTURE_NODE_SYNC_URL: http://host.docker.internal:3000
+      AAVENTURE_SYNC_TOKEN: dev-sync-token
+    volumes:
+      - ./wp-content/plugins/aaventure-attendance-v2:/var/www/html/wp-content/plugins/aaventure-attendance-v2
+
+volumes:
+  db_data:

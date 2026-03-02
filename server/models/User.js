@@ -43,16 +43,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    walletAddress: {
-        type: String,
-        default: null,
-        lowercase: true,
-        trim: true
-    },
-    onChainPassportId: {
-        type: String,
-        default: null
-    },
+
     attendanceRecords: [{
         meetingId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -109,8 +100,8 @@ const userSchema = new mongoose.Schema({
     },
     privacySettings: {
         hideProfile: { type: Boolean, default: false },
-        hideSobrietyDate: { type: Boolean, default: false },
-        hideBlockchainData: { type: Boolean, default: true }
+        hideSobrietyDate: { type: Boolean, default: false }
+
     }
 });
 

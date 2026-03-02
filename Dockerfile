@@ -1,5 +1,5 @@
-# Use Node.js LTS
-FROM node:18-slim
+# Use a Node runtime compatible with mongoose@9 (requires >=20.19)
+FROM node:22-slim
 
 # Create app directory
 WORKDIR /usr/src/app
