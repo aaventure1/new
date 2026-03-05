@@ -68,7 +68,7 @@ It covers using **Railway.app** and **MongoDB Atlas** for a production-grade exp
 
 3. **In a new terminal, seed database**
    ```bash
-   cd /Users/smk/dev/aaventure
+   cd <project-root>
    npm run seed
    ```
 

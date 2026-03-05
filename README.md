@@ -44,7 +44,7 @@ We are actively looking for contributors and early collaborators.
 
 1. **Clone and Install**
 ```bash
-cd /Users/smk/dev/aaventure
+cd <project-root>
 npm install
 ```
 

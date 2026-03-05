@@ -141,13 +141,13 @@ Priority: **Business decision**
 
 ## Files In Scope
 
-- `/Users/smk/dev/apps/aaventure/server/models/AttendanceSubmission.js`
-- `/Users/smk/dev/apps/aaventure/server/models/Attendance.js`
-- `/Users/smk/dev/apps/aaventure/server/routes/attendance.js`
-- `/Users/smk/dev/apps/aaventure/server/routes/admin.js`
-- `/Users/smk/dev/apps/aaventure/server/utils/attendanceEmailQueue.js`
-- `/Users/smk/dev/apps/aaventure/server/utils/attendanceSubmissionUtils.js`
-- `/Users/smk/dev/apps/aaventure/server/utils/attendanceHelperService.js`
-- `/Users/smk/dev/apps/aaventure/public/js/app.js`
-- `/Users/smk/dev/apps/aaventure/public/index.html`
-- `/Users/smk/dev/apps/aaventure/public/css/style.css`
+- `<project-root>/server/models/AttendanceSubmission.js`
+- `<project-root>/server/models/Attendance.js`
+- `<project-root>/server/routes/attendance.js`
+- `<project-root>/server/routes/admin.js`
+- `<project-root>/server/utils/attendanceEmailQueue.js`
+- `<project-root>/server/utils/attendanceSubmissionUtils.js`
+- `<project-root>/server/utils/attendanceHelperService.js`
+- `<project-root>/public/js/app.js`
+- `<project-root>/public/index.html`
+- `<project-root>/public/css/style.css`

@@ -29,7 +29,7 @@ This folder contains a standalone WordPress implementation of Attendance Verific
 1. Start services:
 
 ```bash
-cd /Users/smk/dev/apps/aaventure/wordpress-version
+cd <project-root>/wordpress-version
 docker compose up -d
 ```
 
