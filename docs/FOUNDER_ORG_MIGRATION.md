@@ -28,7 +28,7 @@ git config user.email "founder@yourdomain.com"
 ```
 
 ## Step 2: Create Fresh-History Company Repo
-From the current project root (`/Users/smk/dev/apps/aaventure`):
+From the current project root (`<project-root>`):
 
 ```bash
 ./scripts/admin/bootstrap-org-repo.sh /tmp/aaventure-company aaventure-org/aaventure
